@@ -145,7 +145,7 @@ class _InternalImportVisitor extends SimpleAstVisitor<void> {
 
   /// The rule that created this visitor.
   final AnalysisRule rule;
-  
+
   /// The context for the current analysis.
   final RuleContext context;
 
@@ -241,7 +241,7 @@ class _CoreImportVisitor extends SimpleAstVisitor<void> {
 
   /// The rule that created this visitor.
   final AnalysisRule rule;
-  
+
   /// The context for the current analysis.
   final RuleContext context;
 
