@@ -27,3 +27,20 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# macOS
+.DS_Store
+
+# Coverage
+coverage/
+
+# Credentials (never commit these)
+credentials.json
+service_account.json
+*.pem
+*.key
