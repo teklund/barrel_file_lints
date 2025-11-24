@@ -40,8 +40,11 @@ class BarrelFileLintPlugin extends Plugin {
 // Feature Pattern Utilities
 // =============================================================================
 
-/// Represents a parsed feature path
+/// Represents a parsed feature path.
+///
+/// Contains the feature directory name, feature name, and architectural style.
 class _FeatureMatch {
+  /// Creates a feature match with the given directory, name, and style.
   _FeatureMatch({
     required this.featureDir,
     required this.featureName,
@@ -135,10 +138,15 @@ class AvoidInternalFeatureImports extends AnalysisRule {
   }
 }
 
+/// Visitor that detects internal feature imports.
 class _InternalImportVisitor extends SimpleAstVisitor<void> {
+  /// Creates a visitor for detecting internal imports.
   _InternalImportVisitor(this.rule, this.context);
 
+  /// The rule that created this visitor.
   final AnalysisRule rule;
+  
+  /// The context for the current analysis.
   final RuleContext context;
 
   @override
@@ -226,10 +234,15 @@ class AvoidCoreImportingFeatures extends AnalysisRule {
   }
 }
 
+/// Visitor that detects feature imports from core modules.
 class _CoreImportVisitor extends SimpleAstVisitor<void> {
+  /// Creates a visitor for detecting core-to-feature imports.
   _CoreImportVisitor(this.rule, this.context);
 
+  /// The rule that created this visitor.
   final AnalysisRule rule;
+  
+  /// The context for the current analysis.
   final RuleContext context;
 
   @override
@@ -262,6 +275,7 @@ class _CoreImportVisitor extends SimpleAstVisitor<void> {
 /// Changes: import 'package:myapp/feature_auth/data/auth_service.dart';
 /// To:      import 'package:myapp/feature_auth/auth.dart';
 class ReplaceWithBarrelImport extends ResolvedCorrectionProducer {
+  /// Creates a quick fix for replacing internal imports with barrel imports.
   ReplaceWithBarrelImport({required super.context});
 
   static const _fixKind = FixKind(
@@ -339,6 +353,7 @@ class ReplaceWithBarrelImport extends ResolvedCorrectionProducer {
 /// To:      // TODO: Move this dependency out of core
 ///          // import 'package:myapp/feature_auth/auth.dart';
 class RemoveFeatureImport extends ResolvedCorrectionProducer {
+  /// Creates a quick fix for commenting out feature imports from core.
   RemoveFeatureImport({required super.context});
 
   static const _fixKind = FixKind(
