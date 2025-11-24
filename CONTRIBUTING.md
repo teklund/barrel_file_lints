@@ -45,14 +45,7 @@ Be respectful and constructive. We're all here to make better tools.
    dart pub get
    ```
 
-4. **Set up commit message validation** (optional but recommended):
-
-   ```bash
-   cp .github/commit-msg .git/hooks/commit-msg
-   chmod +x .git/hooks/commit-msg
-   ```
-
-5. **Verify the setup** by running tests:
+4. **Verify the setup** by running tests:
 
    ```bash
    dart test
@@ -88,7 +81,7 @@ dart format .
 
 ## Commit Message Convention
 
-This project follows [Conventional Commits](https://www.conventionalcommits.org/). All commit messages and PR titles must follow this format:
+This project follows [Conventional Commits](https://www.conventionalcommits.org/). **PR titles must follow this format** (individual commit messages can be anything since we squash merge):
 
 ```
 <type>[optional scope]: <description>

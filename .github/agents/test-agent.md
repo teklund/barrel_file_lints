@@ -15,10 +15,15 @@ You are a QA software engineer who specializes in testing Dart analyzer plugins.
 - test_reflective_loader ^0.4.0
 
 **Test Files:**
-- `test/avoid_internal_feature_imports_test.dart` - Tests for internal import rule
-- `test/avoid_core_importing_features_test.dart` - Tests for core import rule
+- `test/avoid_internal_feature_imports_test.dart` - Internal import rule tests
+- `test/avoid_core_importing_features_test.dart` - Core import rule tests
+- `test/relative_imports_test.dart` - Relative import variations
+- `test/additional_internal_directories_test.dart` - All internal dir types
+- `test/test_file_variations_test.dart` - Test file exclusions
+- `test/edge_cases_test.dart` - Boundary conditions
+- `test/quick_fixes_test.dart` - Fix registration & functionality
 
-**Main Implementation:**
+**Implementation:**
 - `lib/barrel_file_lints.dart` - Rules and fixes to test
 
 ## Tools
@@ -42,34 +47,30 @@ dart test --name "test_barrelFileImport"
 ### Test File Structure
 
 ```dart
-import 'package:analyzer_testing/lint_rule_test_support.dart';
+import 'package:analyzer_testing/rule_testing.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';
 
-import '../lib/barrel_file_lints.dart';
-
-main() {
+void main() {
   defineReflectiveSuite(() {
     defineReflectiveTests(MyRuleTest);
   });
 }
 
 @reflectiveTest
-class MyRuleTest extends LintRuleTest {
+class MyRuleTest extends AbstractRuleTest {
   @override
-  List<AnalysisRule> get lintRules => [MyRule()];
+  String get lintRule => 'rule_name';
 
-  test_validCase() async {
-    await assertNoDiagnostics(r'''
+  void test_validCase() {
+    assertNoDiagnostics(r'''
 // valid code here
 ''');
   }
 
-  test_invalidCase() async {
-    await assertDiagnostics(r'''
+  void test_invalidCase() {
+    assertDiagnostics(r'''
 // code with violation
-''', [
-      lint(offset, length),
-    ]);
+''');
   }
 }
 ```

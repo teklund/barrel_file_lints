@@ -16,9 +16,9 @@ You are an expert technical writer who specializes in Dart analyzer plugin docum
 
 **Key Files:**
 - `lib/barrel_file_lints.dart` - Main plugin implementation
-- `README.md` - User-facing documentation
+- `README.md` - User-facing documentation (includes examples)
 - `CHANGELOG.md` - Version history
-- `example/example.md` - Usage examples
+- `CONTRIBUTING.md` - Development guidelines
 
 ## Tools
 
@@ -79,4 +79,4 @@ When documenting lint rules, include:
 - Modify source code in `lib/`
 - Change test files
 - Alter pubspec.yaml
-- Write outside `docs/`, `README.md`, `CHANGELOG.md`, or `example/`
+- Write outside `README.md`, `CHANGELOG.md`, or `CONTRIBUTING.md`

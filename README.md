@@ -2,7 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/barrel_file_lints.svg)](https://pub.dev/packages/barrel_file_lints)
 [![CI](https://github.com/teklund/barrel_file_lints/workflows/CI/badge.svg)](https://github.com/teklund/barrel_file_lints/actions)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![codecov](https://codecov.io/gh/teklund/barrel_file_lints/branch/master/graph/badge.svg)](https://codecov.io/gh/teklund/barrel_file_lints)
 
 A Dart 3.10+ analyzer plugin that enforces barrel file import rules for feature-based Flutter architecture.
