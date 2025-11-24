@@ -83,7 +83,7 @@ dart format .
 
 This project follows [Conventional Commits](https://www.conventionalcommits.org/). **PR titles must follow this format** (individual commit messages can be anything since we squash merge):
 
-```
+```text
 <type>[optional scope]: <description>
 
 [optional body]
@@ -173,7 +173,7 @@ BREAKING CHANGE: Plugin.register() now requires PluginRegistry parameter
 
 ## Project Structure
 
-```
+```text
 barrel_file_lints/
 ├── lib/
 │   ├── main.dart              # Plugin entry point
