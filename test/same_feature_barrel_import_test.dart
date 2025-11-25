@@ -59,9 +59,12 @@ class AuthService {}
   }
 
   Future<void> test_featureImportsInternalFile_underscore() async {
-    newFile('$testPackageRootPath/lib/feature_auth/data/user_repository.dart', '''
+    newFile(
+      '$testPackageRootPath/lib/feature_auth/data/user_repository.dart',
+      '''
 class UserRepository {}
-''');
+''',
+    );
 
     // Importing internal file from same feature - should be allowed
     newFile('$testPackageRootPath/lib/feature_auth/data/auth_service.dart', '''
@@ -77,9 +80,12 @@ class AuthService {}
   }
 
   Future<void> test_featureImportsInternalFile_slash() async {
-    newFile('$testPackageRootPath/lib/features/auth/data/user_repository.dart', '''
+    newFile(
+      '$testPackageRootPath/lib/features/auth/data/user_repository.dart',
+      '''
 class UserRepository {}
-''');
+''',
+    );
 
     // Importing internal file from same feature - should be allowed
     newFile('$testPackageRootPath/lib/features/auth/data/auth_service.dart', '''

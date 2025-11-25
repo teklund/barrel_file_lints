@@ -284,11 +284,11 @@ class _CoreImportVisitor extends SimpleAstVisitor<void> {
 class AvoidSelfBarrelImport extends AnalysisRule {
   /// Creates a new instance of [AvoidSelfBarrelImport]
   AvoidSelfBarrelImport()
-      : super(
-          name: 'avoid_self_barrel_import',
-          description:
-              'Files within a feature should not import their own barrel file',
-        );
+    : super(
+        name: 'avoid_self_barrel_import',
+        description:
+            'Files within a feature should not import their own barrel file',
+      );
 
   /// The lint code for this rule
   static const LintCode code = LintCode(
@@ -345,10 +345,7 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
       if (!_isInternalImport(uri)) {
         // This is importing the feature's own barrel file - check if it's actually the barrel
         if (_isBarrelFile(uri, importedFeature)) {
-          rule.reportAtNode(
-            node,
-            arguments: [importedFeature.featureDir],
-          );
+          rule.reportAtNode(node, arguments: [importedFeature.featureDir]);
         }
       }
     }

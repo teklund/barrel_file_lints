@@ -184,14 +184,16 @@ The CHANGELOG.md follows [Conventional Commits](https://www.conventionalcommits.
 - Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`, `ci`, `perf`, `build`
 - Breaking changes: Use `**BREAKING**` prefix or note in description
 - Keep entries concise and descriptive
-- Link to issues/PRs when relevant (e.g., `([#123](url))`)
+- Link to issues/PRs when relevant (e.g., `([#123](https://github.com/org/repo/issues/123))`)
 
 **Commit Messages:** Use same [Conventional Commits](https://www.conventionalcommits.org/) format:
+
 - Format: `type(scope): description`
 - Breaking changes: Add `!` after type/scope or `BREAKING CHANGE:` in footer
 - Example: `feat(rules): add avoid_self_barrel_import rule`
 
 Example changelog:
+
 ```markdown
 ## [1.0.3] - 2025-11-25
 
