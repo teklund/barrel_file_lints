@@ -7,143 +7,180 @@
 
 A Dart 3.10+ analyzer plugin that enforces barrel file import rules for feature-based Flutter architecture.
 
+> **Note:** This plugin requires Dart SDK 3.10.0 or later. Make sure to restart your IDE after installation for the plugin to take effect.
+
+## Table of Contents
+
+- [What are Barrel Files?](#what-are-barrel-files)
+- [Why Use This Plugin?](#why-use-this-plugin)
+- [Features](#features)
+- [Installation](#installation)
+- [Configuration Presets](#configuration-presets)
+- [Rules](#rules)
+- [Suppressing Warnings](#suppressing-warnings)
+- [Architecture Pattern](#architecture-pattern)
+- [Troubleshooting](#troubleshooting)
+- [How It Works](#how-it-works)
+- [Contributing](#contributing)
+- [License](#license)
+
+## What are Barrel Files?
+
+A **barrel file** re-exports the public API of a feature module as a single entry point:
+
+```dart
+// feature_auth/auth.dart (barrel file)
+export 'data/auth_service.dart';
+export 'ui/login_page.dart';
+```
+
+This enforces encapsulation and provides clear feature boundaries.
+
+### Trade-offs
+
+**Benefits:**
+
+- Clear architectural boundaries between features
+- Explicit public API for each module
+- Easier to refactor internal implementations
+- Prevents tight coupling
+
+**Considerations:**
+
+- In very large projects, barrel files can impact analyzer performance ([Dart SDK #50369](https://github.com/dart-lang/sdk/issues/50369))
+- May introduce false dependency edges
+- This plugin is designed for feature-level barrel files (coarse-grained), not component-level exports (fine-grained), which minimizes performance impact
+
+## Why Use This Plugin?
+
+Automatically prevents developers from bypassing barrel files and importing internal feature files directly. Catches violations in your IDE and CI/CD pipeline with zero runtime overhead.
+
 ## Features
 
-- **Native Dart 3.10 analyzer plugin** - No third-party packages needed
-- **IDE integration** - Works in VS Code, Android Studio, IntelliJ
-- **CI/CD support** - Works with `dart analyze` and `flutter analyze`
-- **Configurable** - Enable/disable individual rules
-- **Multiple naming conventions** - Supports both `feature_xxx/` and `features/xxx/` patterns
+- Native Dart 3.10 analyzer plugin with IDE integration (VS Code, Android Studio, IntelliJ)
+- Works with `dart analyze` and `flutter analyze` for CI/CD
+- Configurable rules with automatic quick fixes
+- Supports `feature_xxx/` and `features/xxx/` naming conventions
 
 ## Rules
 
 ### `avoid_internal_feature_imports`
 
-Features must import other features via their barrel file, not internal files.
-
-Supports both naming conventions:
-
-**Underscore style (`feature_xxx/`):**
+Features must import other features via their barrel file only. Supports both `feature_xxx/` and `features/xxx/` naming patterns.
 
 ```dart
 // ✅ Correct
 import 'package:myapp/feature_auth/auth.dart';
 
-// ❌ Wrong
+// ❌ Wrong - internal imports
 import 'package:myapp/feature_auth/data/auth_service.dart';
-import 'package:myapp/feature_auth/ui/login_page.dart';
 ```
 
-**Clean architecture style (`features/xxx/`):**
-
-```dart
-// ✅ Correct
-import 'package:myapp/features/auth/auth.dart';
-
-// ❌ Wrong
-import 'package:myapp/features/auth/data/auth_service.dart';
-import 'package:myapp/features/auth/presentation/login_page.dart';
-```
-
-**Quick Fix:** Replace with barrel file import - automatically converts internal imports to their barrel file equivalent.
+**Quick Fix:** Automatically replaces internal imports with barrel file imports.
 
 ### `avoid_core_importing_features`
 
-Core module must not import from feature modules (maintains core independence).
+Core module must not import feature modules to maintain architectural independence.
 
 ```dart
 // In lib/core/some_file.dart
 
-// ✅ Correct - core imports from common
+// ✅ Correct
 import 'package:myapp/common/widgets.dart';
 
-// ✅ Correct - core imports external packages
-import 'package:dio/dio.dart';
-
-// ❌ Wrong - core depending on feature (either style)
+// ❌ Wrong - core depending on feature
 import 'package:myapp/feature_auth/auth.dart';
-import 'package:myapp/features/auth/auth.dart';
 ```
 
-**Quick Fix:** Comment out import - adds a TODO comment to remind you to refactor the dependency out of core.
+**Quick Fix:** Comments out the import with a TODO for refactoring.
 
-## Quick Fixes
+### `avoid_self_barrel_import`
 
-Both rules include IDE quick fixes that appear when you hover over the error:
-
-| Rule | Quick Fix | Description |
-|------|-----------|-------------|
-| `avoid_internal_feature_imports` | Replace with barrel file import | Converts `feature_auth/data/service.dart` → `feature_auth/auth.dart` |
-| `avoid_core_importing_features` | Comment out import | Comments the import with a TODO for refactoring |
-
-### Example
-
-Before quick fix:
+Files within a feature should not import their own feature's barrel file. This prevents circular dependencies and enforces direct imports within feature boundaries.
 
 ```dart
-import 'package:myapp/feature_auth/data/auth_service.dart';
-```
+// In lib/feature_auth/data/auth_service.dart
 
-After applying "Replace with barrel file import":
+// ✅ Correct - direct import within same feature
+import 'package:myapp/feature_auth/data/user_repository.dart';
 
-```dart
+// ❌ Wrong - importing own barrel (circular dependency risk)
 import 'package:myapp/feature_auth/auth.dart';
 ```
 
 ## Installation
 
-### From pub.dev
+1. Add to `pubspec.yaml`:
+
+   ```yaml
+   dev_dependencies:
+     barrel_file_lints: ^1.0.0
+   ```
+
+2. Enable in `analysis_options.yaml`:
+
+   ```yaml
+   plugins:
+     barrel_file_lints:
+       diagnostics:
+         avoid_internal_feature_imports: true
+         avoid_core_importing_features: true
+         avoid_self_barrel_import: true
+   ```
+
+3. Install dependencies:
+
+   ```bash
+   dart pub get
+   # or
+   flutter pub get
+   ```
+
+4. Restart your IDE for the plugin to take effect.
+
+Verify it's working by running `dart analyze` or `flutter analyze`.
+
+## Configuration Presets
+
+Choose a configuration that matches your project's needs:
+
+### Strict Mode (Recommended)
+
+Enforce all architectural rules for maximum consistency:
 
 ```yaml
-# pubspec.yaml
-dev_dependencies:
-  barrel_file_lints: ^1.0.0
-```
-
-### From Git
-
-```yaml
-# pubspec.yaml
-dev_dependencies:
+plugins:
   barrel_file_lints:
-    git:
-      url: https://github.com/user/barrel_file_lints.git
-      ref: main
+    diagnostics:
+      avoid_internal_feature_imports: true
+      avoid_core_importing_features: true
+      avoid_self_barrel_import: true
 ```
 
-## Configuration
+### Moderate Mode
 
-Enable the plugin in your `analysis_options.yaml`:
+Focus on cross-feature boundaries while allowing flexibility within features:
 
 ```yaml
-analyzer:
-  plugins:
-    barrel_file_lints:
-      diagnostics:
-        avoid_internal_feature_imports: true
-        avoid_core_importing_features: true
+plugins:
+  barrel_file_lints:
+    diagnostics:
+      avoid_internal_feature_imports: true
+      avoid_core_importing_features: true
+      avoid_self_barrel_import: false  # Allow importing own barrel
 ```
 
-Or if using a local path:
+### Conservative Mode
+
+Only enforce core separation to prevent dependency cycles:
 
 ```yaml
-analyzer:
-  plugins:
-    barrel_file_lints:
-      path: packages/barrel_file_lints
-      diagnostics:
-        avoid_internal_feature_imports: true
-        avoid_core_importing_features: true
-```
-
-## Usage
-
-Run analysis:
-
-```bash
-flutter analyze
-# or
-dart analyze
+plugins:
+  barrel_file_lints:
+    diagnostics:
+      avoid_internal_feature_imports: false
+      avoid_core_importing_features: true  # Core stays independent
+      avoid_self_barrel_import: false
 ```
 
 ## Suppressing Warnings
@@ -163,59 +200,37 @@ Suppress for an entire file:
 
 ## Architecture Pattern
 
-This plugin enforces a feature-based architecture pattern with two supported naming conventions:
-
-### Underscore Style (`feature_xxx/`)
+Enforces feature-based architecture with barrel files:
 
 ```text
 lib/
-├── core/                 # Core utilities (no feature imports)
+├── core/                 # Core utilities (no feature imports allowed)
 ├── common/               # Shared widgets/utilities
 └── feature_auth/         # Feature modules
-    ├── auth.dart         # 🔑 Barrel file (public API)
-    ├── data/             # Internal: APIs, repos, services, models
-    └── ui/               # Internal: Pages, widgets, dialogs
+    ├── auth.dart         # Barrel file (public API)
+    ├── data/             # Internal implementation
+    └── ui/               # Internal implementation
 ```
 
-### Clean Architecture Style (`features/xxx/`)
+**Rules:**
 
-```text
-lib/
-├── core/                 # Core utilities (no feature imports)
-├── common/               # Shared widgets/utilities
-└── features/
-    └── auth/             # Feature modules
-        ├── auth.dart     # 🔑 Barrel file (public API)
-        ├── data/         # Internal: repositories, data sources
-        ├── domain/       # Internal: entities, use cases
-        ├── presentation/ # Internal: pages, widgets, blocs
-        └── application/  # Internal: services
-```
+1. Features import other features via barrel files only (`feature_a/a.dart`)
+2. Core cannot import features (maintains independence)
+3. Files within same feature use direct imports (not own barrel)
+4. Test files are excluded from checks
 
-### Import Rules
+## Troubleshooting
 
-1. **Features import other features via barrel files only**
-   - `feature_a/` can import `feature_b/b.dart`
-   - `features/a/` can import `features/b/b.dart`
-   - Cannot import internal paths like `data/`, `ui/`, `domain/`, etc.
+**Plugin not detected?**
 
-2. **Core is independent**
-   - `core/` cannot import from any `feature_*/` or `features/*/`
-   - Features depend on core, not vice versa
+- Run `dart pub get` and restart your IDE
+- Verify with `dart analyze --verbose` (should list `barrel_file_lints`)
 
-3. **Internal imports within same feature are allowed**
-   - `feature_a/ui/page.dart` can import `feature_a/data/service.dart`
-   - `features/a/presentation/page.dart` can import `features/a/domain/entity.dart`
+**No diagnostics?**
 
-4. **Test files are excluded**
-   - Files in `test/`, `test_driver/`, `integration_test/` are not checked
-   - Files ending with `_test.dart` are not checked
-   - Tests need direct access to internal implementations
-
-## Requirements
-
-- Dart SDK ^3.10.0
-- Flutter 3.38+
+- Check rules are enabled in `analysis_options.yaml`
+- Verify Dart SDK ^3.10.0: `dart --version`
+- Test files are excluded by design
 
 ## How It Works
 
@@ -226,14 +241,11 @@ The plugin uses Dart's native analyzer plugin API (introduced in Dart 3.10) to:
 3. Check if imports violate barrel file patterns
 4. Report diagnostics in your IDE and CLI
 
+**Performance:** The plugin adds negligible overhead to analysis time since it only inspects import directives, not the entire AST.
+
 ## Contributing
 
-Contributions are welcome! Please:
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new rules
-4. Submit a pull request
+Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, guidelines, and how to submit pull requests.
 
 ## License
 
