@@ -16,6 +16,7 @@ plugins:
     diagnostics:
       avoid_internal_feature_imports: true
       avoid_core_importing_features: true
+      avoid_self_barrel_import: true
 ```
 
 ## 3. Example violations

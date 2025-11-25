@@ -2,35 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
-## 1.0.2 - 2025-11-24
+This project follows [Conventional Commits](https://www.conventionalcommits.org/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-### Changed
+## [1.0.3] - 2025-11-25
 
-- Enhanced dartdoc comments on internal classes and members to improve API documentation coverage
+- **feat(rules)**: add `avoid_self_barrel_import` rule to prevent circular dependencies by blocking files from importing their own feature's barrel file
+- **feat(config)**: add configuration presets in README (Strict, Moderate, Conservative modes)
+- **feat(rules)**: extend internal directory detection: `/services/`, `/repositories/`, `/providers/`, `/bloc/`, `/cubit/`, `/notifiers/`, `/widgets/`, `/utils/`, `/config/`, `/helpers/`
+- **fix(config)**: `analysis_options.yaml` now uses root-level `plugins:` (Dart 3.10+ standard)
+- **docs**: streamline README from 281 to 257 lines by merging Quick Fixes into Rules section
+- **docs**: add barrel file trade-offs section and configuration best practices
 
-## 1.0.1 - 2025-11-24
+## [1.0.2] - 2025-11-24
 
-### Changed
+- **docs**: enhance dartdoc comments on internal classes and members to improve API documentation coverage
 
-- Simplified publish workflow to use official Dart publish action
-- Improved CI/CD workflows with better verification and quality checks
+## [1.0.1] - 2025-11-24
 
-## 1.0.0 - 2025-11-24
+- **ci**: simplify publish workflow to use official Dart publish action
+- **ci**: improve CI/CD workflows with better verification and quality checks
 
-### Added
+## [1.0.0] - 2025-11-24
 
-- Initial stable release
-- Two lint rules:
-  - `avoid_internal_feature_imports` - Features must import other features via barrel files only
-  - `avoid_core_importing_features` - Core module must not import from feature modules
-- Quick fixes with IDE integration:
-  - Replace internal import with barrel file import
-  - Comment out feature import in core with TODO
-- Support for both naming conventions:
-  - `feature_xxx/` (underscore style)
-  - `features/xxx/` (clean architecture style)
-- Works with both absolute (`package:`) and relative (`../`) imports
-- Test files automatically excluded from checks
-- Comprehensive test suite (47 tests across 7 test files)
-- Full CI/CD pipeline with GitHub Actions
-- Complete documentation and examples
+- **feat**: initial stable release
+- **feat(rules)**: add `avoid_internal_feature_imports` rule - features must import other features via barrel files only
+- **feat(rules)**: add `avoid_core_importing_features` rule - core module must not import from feature modules
+- **feat(quickfix)**: add quick fix to replace internal import with barrel file import
+- **feat(quickfix)**: add quick fix to comment out feature import in core with TODO
+- **feat**: support both naming conventions: `feature_xxx/` (underscore) and `features/xxx/` (clean architecture)
+- **feat**: support both absolute (`package:`) and relative (`../`) imports
+- **feat**: automatically exclude test files from checks
+- **test**: add comprehensive test suite (47 tests across 7 test files)
+- **ci**: add full CI/CD pipeline with GitHub Actions
+- **docs**: add complete documentation and examples

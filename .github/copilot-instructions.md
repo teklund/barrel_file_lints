@@ -170,10 +170,38 @@ All commits and PR titles must follow:
 1. Always run tests: `dart test`
 2. Always analyze: `dart analyze --fatal-infos`
 3. Always format: `dart format .`
-4. Update CHANGELOG.md for user-facing changes
+4. Update CHANGELOG.md for user-facing changes following Conventional Commits format
 5. Follow existing patterns and structure
 6. Test both naming conventions
 7. Consider backward compatibility
+
+## CHANGELOG.md Format
+
+The CHANGELOG.md follows [Conventional Commits](https://www.conventionalcommits.org/) format with [Semantic Versioning](https://semver.org/):
+
+- Version format: `## [1.0.3] - YYYY-MM-DD`
+- Each entry uses conventional commit format: `**type(scope)**: description`
+- Types: `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`, `ci`, `perf`, `build`
+- Breaking changes: Use `**BREAKING**` prefix or note in description
+- Keep entries concise and descriptive
+- Link to issues/PRs when relevant (e.g., `([#123](https://github.com/org/repo/issues/123))`)
+
+**Commit Messages:** Use same [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+- Format: `type(scope): description`
+- Breaking changes: Add `!` after type/scope or `BREAKING CHANGE:` in footer
+- Example: `feat(rules): add avoid_self_barrel_import rule`
+
+Example changelog:
+
+```markdown
+## [1.0.3] - 2025-11-25
+
+- **feat(rules)**: add `avoid_self_barrel_import` rule to prevent circular dependencies
+- **feat(config)**: add configuration presets in README
+- **fix(config)**: `analysis_options.yaml` now uses root-level `plugins:`
+- **docs**: streamline README by merging Quick Fixes into Rules section
+```
 
 ## Documentation Standards
 

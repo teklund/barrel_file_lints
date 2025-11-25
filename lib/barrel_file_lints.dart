@@ -24,6 +24,7 @@ class BarrelFileLintPlugin extends Plugin {
     registry
       ..registerLintRule(AvoidInternalFeatureImports())
       ..registerLintRule(AvoidCoreImportingFeatures())
+      ..registerLintRule(AvoidSelfBarrelImport())
       // Register quick fixes
       ..registerFixForRule(
         AvoidInternalFeatureImports.code,
@@ -199,7 +200,17 @@ class _InternalImportVisitor extends SimpleAstVisitor<void> {
       uri.contains('/domain/') ||
       uri.contains('/presentation/') ||
       uri.contains('/application/') ||
-      uri.contains('/infrastructure/');
+      uri.contains('/infrastructure/') ||
+      uri.contains('/services/') ||
+      uri.contains('/repositories/') ||
+      uri.contains('/providers/') ||
+      uri.contains('/bloc/') ||
+      uri.contains('/cubit/') ||
+      uri.contains('/notifiers/') ||
+      uri.contains('/widgets/') ||
+      uri.contains('/utils/') ||
+      uri.contains('/config/') ||
+      uri.contains('/helpers/');
 }
 
 /// Lint rule: Core module must not import from features
@@ -264,6 +275,123 @@ class _CoreImportVisitor extends SimpleAstVisitor<void> {
   /// Check if file is in core/ directory
   bool _isInCore(String path) =>
       path.contains('/core/') || path.contains('/lib/core/');
+}
+
+/// Lint rule: Files within a feature should not import their own barrel file
+///
+/// ✅ Correct: import 'package:myapp/feature_auth/data/auth_service.dart';
+/// ❌ Wrong: import 'package:myapp/feature_auth/auth.dart'; (from within feature_auth)
+class AvoidSelfBarrelImport extends AnalysisRule {
+  /// Creates a new instance of [AvoidSelfBarrelImport]
+  AvoidSelfBarrelImport()
+    : super(
+        name: 'avoid_self_barrel_import',
+        description:
+            'Files within a feature should not import their own barrel file',
+      );
+
+  /// The lint code for this rule
+  static const LintCode code = LintCode(
+    'avoid_self_barrel_import',
+    "Avoid importing your own feature's barrel file '{0}'. Use direct imports within the same feature to prevent circular dependencies.",
+    correctionMessage:
+        'Import the specific file you need directly instead of using the barrel file.',
+  );
+
+  @override
+  LintCode get diagnosticCode => code;
+
+  @override
+  void registerNodeProcessors(
+    RuleVisitorRegistry registry,
+    RuleContext context,
+  ) {
+    registry.addImportDirective(this, _SelfBarrelImportVisitor(this, context));
+  }
+}
+
+/// Visitor that detects self-barrel imports.
+class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
+  /// Creates a visitor for detecting self-barrel imports.
+  _SelfBarrelImportVisitor(this.rule, this.context);
+
+  /// The rule that created this visitor.
+  final AnalysisRule rule;
+
+  /// The context for the current analysis.
+  final RuleContext context;
+
+  @override
+  void visitImportDirective(ImportDirective node) {
+    final uri = node.uri.stringValue;
+    if (uri == null) return;
+
+    // Get the current file's feature
+    final currentPath = context.libraryElement?.uri.toString() ?? '';
+
+    // Skip test files
+    if (_isTestFile(currentPath)) return;
+
+    final currentFeature = _extractFeature(currentPath);
+    if (currentFeature == null) return;
+
+    // Check if importing from same feature
+    final importedFeature = _extractFeature(uri);
+    if (importedFeature == null) return;
+
+    // If importing from the SAME feature
+    if (importedFeature.featureDir == currentFeature.featureDir) {
+      // Check if it's the barrel file (NOT an internal directory)
+      if (!_isInternalImport(uri)) {
+        // This is importing the feature's own barrel file - check if it's actually the barrel
+        if (_isBarrelFile(uri, importedFeature)) {
+          rule.reportAtNode(node, arguments: [importedFeature.featureDir]);
+        }
+      }
+    }
+  }
+
+  /// Check if file is a test file
+  bool _isTestFile(String path) =>
+      path.contains('/test/') ||
+      path.contains('/test_driver/') ||
+      path.contains('/integration_test/') ||
+      path.endsWith('_test.dart');
+
+  /// Check if the URI points to a barrel file
+  /// Barrel files are typically named after the feature (e.g., auth.dart for feature_auth)
+  bool _isBarrelFile(String uri, _FeatureMatch feature) {
+    // Extract just the filename from the URI
+    final segments = uri.split('/');
+    final fileName = segments.isNotEmpty ? segments.last : '';
+
+    // Check if filename matches the feature name + .dart
+    // e.g., for feature_auth, barrel is auth.dart
+    // e.g., for features/auth, barrel is auth.dart
+    return fileName == '${feature.featureName}.dart';
+  }
+
+  /// Check if import points to internal files
+  bool _isInternalImport(String uri) =>
+      uri.contains('/data/') ||
+      uri.contains('/ui/') ||
+      uri.contains('/models/') ||
+      uri.contains('/exceptions/') ||
+      uri.contains('/extensions/') ||
+      uri.contains('/domain/') ||
+      uri.contains('/presentation/') ||
+      uri.contains('/application/') ||
+      uri.contains('/infrastructure/') ||
+      uri.contains('/services/') ||
+      uri.contains('/repositories/') ||
+      uri.contains('/providers/') ||
+      uri.contains('/bloc/') ||
+      uri.contains('/cubit/') ||
+      uri.contains('/notifiers/') ||
+      uri.contains('/widgets/') ||
+      uri.contains('/utils/') ||
+      uri.contains('/config/') ||
+      uri.contains('/helpers/');
 }
 
 // =============================================================================

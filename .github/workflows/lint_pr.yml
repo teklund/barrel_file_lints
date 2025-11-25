@@ -40,12 +40,6 @@ jobs:
           disallowScopes: |
             release
             [A-Z]+
-          # Subject must not start with uppercase
-          subjectPattern: ^(?![A-Z]).+$
-          subjectPatternError: |
-            The subject "{subject}" found in the pull request title "{title}"
-            didn't match the configured pattern. Please ensure that the subject
-            doesn't start with an uppercase character.
           # Validate against all commits in PR
           validateSingleCommit: false
           # Allow merge commits
