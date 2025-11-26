@@ -160,12 +160,15 @@ export 'data/catalog_service.dart';
 ''');
 
     // Using relative import to own barrel from subdirectory
-    newFile('$testPackageRootPath/lib/features/catalog/ui/catalog_page.dart', '''
+    newFile(
+      '$testPackageRootPath/lib/features/catalog/ui/catalog_page.dart',
+      '''
 // ignore: unused_import
 import '../catalog.dart';
 
 class CatalogPage {}
-''');
+''',
+    );
 
     // Should trigger lint - importing own barrel via relative path
     await assertDiagnosticsInFile(
@@ -204,12 +207,15 @@ class OrderExtensions {}
     );
 
     // Using unnecessarily complex relative path that escapes and re-enters same feature
-    newFile('$testPackageRootPath/lib/feature_order/data/order_service.dart', '''
+    newFile(
+      '$testPackageRootPath/lib/feature_order/data/order_service.dart',
+      '''
 // ignore: unused_import
 import '../../feature_order/data/extensions/order_extensions.dart';
 
 class OrderService {}
-''');
+''',
+    );
 
     // Should trigger lint - unnecessarily complex relative path
     await assertDiagnosticsInFile(
