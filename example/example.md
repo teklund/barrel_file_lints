@@ -17,6 +17,8 @@ plugins:
       avoid_internal_feature_imports: true
       avoid_core_importing_features: true
       avoid_self_barrel_import: true
+      avoid_cross_feature_barrel_exports: true
+      avoid_barrel_cycle: true
 ```
 
 ## 3. Example violations
@@ -58,6 +60,42 @@ import 'package:myapp/feature_auth/auth.dart';
 class ApiClient {
   // ...
 }
+```
+
+### Bad: Importing own barrel
+
+```dart
+// lib/feature_auth/data/auth_service.dart
+
+// ❌ This will trigger avoid_self_barrel_import
+import 'package:myapp/feature_auth/auth.dart';
+
+class AuthService {
+  // ...
+}
+```
+
+### Bad: Cross-feature barrel export
+
+```dart
+// lib/feature_auth/auth.dart (barrel file)
+
+export 'data/auth_service.dart';
+
+// ❌ This will trigger avoid_cross_feature_barrel_exports
+export '../feature_profile/data/user.dart';
+```
+
+### Bad: Barrel cycle
+
+```dart
+// lib/feature_auth/auth.dart
+// ❌ This will trigger avoid_barrel_cycle
+export '../feature_profile/profile.dart';
+
+// lib/feature_profile/profile.dart
+// ❌ Creates a cycle back to auth
+export '../feature_auth/auth.dart';
 ```
 
 ## 4. Run analysis
