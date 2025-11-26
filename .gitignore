@@ -33,6 +33,9 @@ doc/api/
 *.iml
 .vscode/
 
+# Claude Code
+.claude/settings.local.json
+
 # macOS
 .DS_Store
 

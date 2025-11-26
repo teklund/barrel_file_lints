@@ -146,4 +146,122 @@ class HomePage {}
       '$testPackageRootPath/lib/feature_home/ui/home_page.dart',
     );
   }
+
+  // ==========================================================================
+  // Negative test cases - malformed/edge inputs
+  // ==========================================================================
+
+  Future<void> test_dartCoreImport_ignored() async {
+    newFile('$testPackageRootPath/lib/feature_home/ui/home_page.dart', '''
+// ignore: unused_import
+import 'dart:core';
+// ignore: unused_import
+import 'dart:async';
+
+class HomePage {}
+''');
+
+    // Dart SDK imports should be ignored
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_home/ui/home_page.dart',
+    );
+  }
+
+  Future<void> test_externalPackageImport_ignored() async {
+    newFile('$testPackageRootPath/lib/feature_home/ui/home_page.dart', '''
+// ignore: uri_does_not_exist
+import 'package:flutter/material.dart';
+// ignore: uri_does_not_exist
+import 'package:http/http.dart';
+
+class HomePage {}
+''');
+
+    // External package imports should be ignored
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_home/ui/home_page.dart',
+    );
+  }
+
+  Future<void> test_emptyFeatureName() async {
+    // Edge case: malformed feature directory name
+    newFile('$testPackageRootPath/lib/feature_/data/service.dart', '''
+class Service {}
+''');
+
+    newFile('$testPackageRootPath/lib/feature_home/ui/home_page.dart', '''
+// ignore: unused_import
+import 'package:test/feature_/data/service.dart';
+
+class HomePage {}
+''');
+
+    // Malformed feature names should not crash
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_home/ui/home_page.dart',
+    );
+  }
+
+  Future<void> test_featureWithNumbers() async {
+    newFile('$testPackageRootPath/lib/feature_auth2/data/service.dart', '''
+class Service {}
+''');
+
+    newFile('$testPackageRootPath/lib/feature_home/ui/home_page.dart', '''
+// ignore: unused_import
+import 'package:test/feature_auth2/data/service.dart';
+
+class HomePage {}
+''');
+
+    // Feature names with numbers should be handled
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_home/ui/home_page.dart',
+      [lint(25, 54)],
+    );
+  }
+
+  Future<void> test_featureWithUnderscoresInName() async {
+    newFile(
+      '$testPackageRootPath/lib/feature_user_auth/data/auth_service.dart',
+      '''
+class AuthService {}
+''',
+    );
+
+    newFile('$testPackageRootPath/lib/feature_home/ui/home_page.dart', '''
+// ignore: unused_import
+import 'package:test/feature_user_auth/data/auth_service.dart';
+
+class HomePage {}
+''');
+
+    // Feature names with underscores should be handled
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_home/ui/home_page.dart',
+      [lint(25, 63)],
+    );
+  }
+
+  Future<void> test_veryLongFeaturePath() async {
+    newFile(
+      '$testPackageRootPath/lib/feature_auth/data/repositories/remote/api/v1/endpoints/auth_endpoint.dart',
+      '''
+class AuthEndpoint {}
+''',
+    );
+
+    newFile('$testPackageRootPath/lib/feature_home/ui/home_page.dart', '''
+// ignore: unused_import
+import 'package:test/feature_auth/data/repositories/remote/api/v1/endpoints/auth_endpoint.dart';
+
+class HomePage {}
+''');
+
+    // Very deeply nested paths should work correctly
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_home/ui/home_page.dart',
+      [lint(25, 96)],
+    );
+  }
 }

@@ -3,7 +3,7 @@ description: >-
   A Dart 3.10+ analyzer plugin that enforces barrel file import rules for
   feature-based Flutter architecture. Supports both feature_xxx/ and
   features/xxx/ naming conventions.
-version: 1.0.3
+version: 1.0.4
 repository: https://github.com/teklund/barrel_file_lints
 issue_tracker: https://github.com/teklund/barrel_file_lints/issues
 homepage: https://github.com/teklund/barrel_file_lints
@@ -22,9 +22,14 @@ dependencies:
   analysis_server_plugin: ^0.3.4
   analyzer: ^9.0.0
   analyzer_plugin: ^0.13.11
+  args: ^2.6.0
+  path: ^1.9.0
 
 dev_dependencies:
   analyzer_testing: ^0.1.7
   lints: ">=5.0.0 <7.0.0"
   test: ^1.24.0
   test_reflective_loader: ^0.4.0
+
+executables:
+  check_cycles: check_cycles
