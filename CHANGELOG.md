@@ -10,7 +10,8 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 - **feat(quickfix)**: add quick fix to remove cross-feature exports from barrel files
 - **fix(rules)**: `avoid_self_barrel_import` now correctly detects relative imports to own barrel file (e.g., `import '../trip.dart'` from `feature_trip/ui/file.dart`)
 - **test**: add 15 comprehensive tests for the new barrel exports rule
-- **test**: add 2 tests for relative barrel imports detection
+- **test**: add 3 tests for relative barrel imports detection (underscore, slash, and internal file allowed)
+- **test**: add 24 comprehensive tests for quick fix logic and utility function verification
 - **refactor**: split monolithic barrel_file_lints.dart (517 lines) into modular structure with separate directories for rules, fixes, and utilities
 
 ## [1.0.3] - 2025-11-25

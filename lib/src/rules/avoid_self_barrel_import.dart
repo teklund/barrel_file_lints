@@ -11,9 +11,12 @@ import 'package:analyzer/error/error.dart';
 import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 
 /// Lint rule: Files within a feature should not import their own barrel file
+/// or use unnecessarily complex relative paths within the same feature
 ///
 /// ✅ Correct: import 'package:myapp/feature_auth/data/auth_service.dart';
+/// ✅ Correct: import 'extensions/trip_extensions.dart'; (within same directory)
 /// ❌ Wrong: import 'package:myapp/feature_auth/auth.dart'; (from within feature_auth)
+/// ❌ Wrong: import '../../feature_trip/data/extensions/file.dart'; (from within feature_trip)
 class AvoidSelfBarrelImport extends AnalysisRule {
   /// Creates a new instance of [AvoidSelfBarrelImport]
   AvoidSelfBarrelImport()
@@ -75,6 +78,13 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
         rule.reportAtNode(node, arguments: [currentFeature.featureDir]);
         return;
       }
+
+      // Check if it's a complex relative path that re-enters the same feature
+      // e.g., '../../feature_trip/data/file.dart' from within feature_trip
+      if (_isRedundantRelativePath(uri, currentFeature)) {
+        rule.reportAtNode(node, arguments: [currentFeature.featureDir]);
+        return;
+      }
     }
 
     // Handle absolute package imports
@@ -101,6 +111,21 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
 
     // Check if filename matches the feature's barrel file name
     return fileName == '${feature.featureName}.dart';
+  }
+
+  /// Check if a relative path unnecessarily escapes and re-enters the same feature
+  /// e.g., '../../feature_trip/data/extensions/file.dart' from within feature_trip
+  bool _isRedundantRelativePath(String uri, FeatureMatch currentFeature) {
+    // Only check paths that go up with ../
+    if (!uri.contains('../')) return false;
+
+    // Extract the feature pattern from the relative path
+    // Look for feature_xxx or features/xxx in the path
+    final importedFeature = extractFeature(uri);
+    if (importedFeature == null) return false;
+
+    // If the relative path references the same feature we're already in, it's redundant
+    return importedFeature.featureDir == currentFeature.featureDir;
   }
 
   /// Check if the URI points to a barrel file

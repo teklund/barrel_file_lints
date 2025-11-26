@@ -21,7 +21,7 @@ class AvoidCrossFeatureBarrelExportsTest extends AnalysisRuleTest {
   // ==========================================================================
 
   Future<void>
-      test_barrelFileExportsFromOwnFeatureSubdirectories_underscore() async {
+  test_barrelFileExportsFromOwnFeatureSubdirectories_underscore() async {
     newFile('$testPackageRootPath/lib/feature_auth/data/auth_service.dart', '''
 class AuthService {}
 ''');
@@ -41,7 +41,7 @@ export 'ui/login_page.dart';
   }
 
   Future<void>
-      test_barrelFileExportsFromOwnFeatureSubdirectories_slash() async {
+  test_barrelFileExportsFromOwnFeatureSubdirectories_slash() async {
     newFile('$testPackageRootPath/lib/features/auth/domain/auth_user.dart', '''
 class AuthUser {}
 ''');
@@ -163,7 +163,7 @@ export '../feature_users/data/user.dart';
     );
   }
 
-  Future<void> test_barrelExportsFromDifferentFeature_slash() async{
+  Future<void> test_barrelExportsFromDifferentFeature_slash() async {
     newFile('$testPackageRootPath/lib/features/users/domain/user.dart', '''
 class User {}
 ''');
@@ -184,7 +184,7 @@ export '../users/domain/user.dart';
   }
 
   Future<void>
-      test_barrelExportsFromDifferentFeatureAbsoluteImport_underscore() async {
+  test_barrelExportsFromDifferentFeatureAbsoluteImport_underscore() async {
     newFile('$testPackageRootPath/lib/feature_users/data/user.dart', '''
 class User {}
 ''');
@@ -205,7 +205,7 @@ export 'package:test/feature_users/data/user.dart';
   }
 
   Future<void>
-      test_barrelExportsFromDifferentFeatureAbsoluteImport_slash() async {
+  test_barrelExportsFromDifferentFeatureAbsoluteImport_slash() async {
     newFile('$testPackageRootPath/lib/features/users/domain/user.dart', '''
 class User {}
 ''');

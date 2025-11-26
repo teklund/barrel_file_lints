@@ -98,14 +98,12 @@ bool isBarrelFile(String path, FeatureMatch feature) {
   // Check if it's at the feature root (not in a subdirectory)
   // For underscore style: should be like .../feature_auth/auth.dart
   // For slash style: should be like .../features/auth/auth.dart
-  final pattern =
-      RegExp('${feature.featureDir}/${feature.featureName}\\.dart');
+  final pattern = RegExp('${feature.featureDir}/${feature.featureName}\\.dart');
   return pattern.hasMatch(path);
 }
 
 /// Check if URI is relative (starts with ./ or ../)
-bool isRelativeUri(String uri) =>
-    uri.startsWith('./') || uri.startsWith('../');
+bool isRelativeUri(String uri) => uri.startsWith('./') || uri.startsWith('../');
 
 /// Check if a relative URI escapes the feature folder using ../
 bool escapesFeatureFolder(String uri) =>
