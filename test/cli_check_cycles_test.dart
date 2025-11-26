@@ -31,8 +31,16 @@ void main() {
 
     test('detects simple two-feature cycle', () async {
       // feature_a exports feature_b, feature_b exports feature_a
-      _createFeature(libDir, 'a', exports: ["export 'package:test/feature_b/b.dart';"]);
-      _createFeature(libDir, 'b', exports: ["export 'package:test/feature_a/a.dart';"]);
+      _createFeature(
+        libDir,
+        'a',
+        exports: ["export 'package:test/feature_b/b.dart';"],
+      );
+      _createFeature(
+        libDir,
+        'b',
+        exports: ["export 'package:test/feature_a/a.dart';"],
+      );
 
       final result = await _runCheckCycles(libDir);
 
@@ -43,9 +51,21 @@ void main() {
 
     test('detects transitive three-feature cycle', () async {
       // a → b → c → a
-      _createFeature(libDir, 'a', exports: ["export 'package:test/feature_b/b.dart';"]);
-      _createFeature(libDir, 'b', exports: ["export 'package:test/feature_c/c.dart';"]);
-      _createFeature(libDir, 'c', exports: ["export 'package:test/feature_a/a.dart';"]);
+      _createFeature(
+        libDir,
+        'a',
+        exports: ["export 'package:test/feature_b/b.dart';"],
+      );
+      _createFeature(
+        libDir,
+        'b',
+        exports: ["export 'package:test/feature_c/c.dart';"],
+      );
+      _createFeature(
+        libDir,
+        'c',
+        exports: ["export 'package:test/feature_a/a.dart';"],
+      );
 
       final result = await _runCheckCycles(libDir);
 
@@ -55,12 +75,28 @@ void main() {
 
     test('detects multiple independent cycles', () async {
       // Cycle 1: a ↔ b
-      _createFeature(libDir, 'a', exports: ["export 'package:test/feature_b/b.dart';"]);
-      _createFeature(libDir, 'b', exports: ["export 'package:test/feature_a/a.dart';"]);
+      _createFeature(
+        libDir,
+        'a',
+        exports: ["export 'package:test/feature_b/b.dart';"],
+      );
+      _createFeature(
+        libDir,
+        'b',
+        exports: ["export 'package:test/feature_a/a.dart';"],
+      );
 
       // Cycle 2: c ↔ d
-      _createFeature(libDir, 'c', exports: ["export 'package:test/feature_d/d.dart';"]);
-      _createFeature(libDir, 'd', exports: ["export 'package:test/feature_c/c.dart';"]);
+      _createFeature(
+        libDir,
+        'c',
+        exports: ["export 'package:test/feature_d/d.dart';"],
+      );
+      _createFeature(
+        libDir,
+        'd',
+        exports: ["export 'package:test/feature_c/c.dart';"],
+      );
 
       final result = await _runCheckCycles(libDir);
 
@@ -72,8 +108,18 @@ void main() {
 
     test('handles features/ naming convention', () async {
       // Create features using features/ style
-      _createFeature(libDir, 'auth', exports: ["export 'package:test/features/profile/profile.dart';"], useFeaturesStyle: true);
-      _createFeature(libDir, 'profile', exports: ["export 'package:test/features/auth/auth.dart';"], useFeaturesStyle: true);
+      _createFeature(
+        libDir,
+        'auth',
+        exports: ["export 'package:test/features/profile/profile.dart';"],
+        useFeaturesStyle: true,
+      );
+      _createFeature(
+        libDir,
+        'profile',
+        exports: ["export 'package:test/features/auth/auth.dart';"],
+        useFeaturesStyle: true,
+      );
 
       final result = await _runCheckCycles(libDir);
 
@@ -86,8 +132,12 @@ void main() {
       final aDir = Directory(path.join(libDir, 'feature_a'))..createSync();
       final bDir = Directory(path.join(libDir, 'feature_b'))..createSync();
 
-      File(path.join(aDir.path, 'a.dart')).writeAsStringSync("export '../feature_b/b.dart';");
-      File(path.join(bDir.path, 'b.dart')).writeAsStringSync("export '../feature_a/a.dart';");
+      File(
+        path.join(aDir.path, 'a.dart'),
+      ).writeAsStringSync("export '../feature_b/b.dart';");
+      File(
+        path.join(bDir.path, 'b.dart'),
+      ).writeAsStringSync("export '../feature_a/a.dart';");
 
       final result = await _runCheckCycles(libDir);
 
@@ -97,10 +147,12 @@ void main() {
 
     test('ignores non-barrel dart files', () async {
       // Create a feature with internal files that don't form cycles
-      final featureDir = Directory(path.join(libDir, 'feature_auth'))..createSync();
+      final featureDir = Directory(path.join(libDir, 'feature_auth'))
+        ..createSync();
       File(path.join(featureDir.path, 'auth.dart')).writeAsStringSync('');
 
-      final dataDir = Directory(path.join(featureDir.path, 'data'))..createSync();
+      final dataDir = Directory(path.join(featureDir.path, 'data'))
+        ..createSync();
       File(path.join(dataDir.path, 'auth_repo.dart')).writeAsStringSync(
         "export 'package:test/feature_auth/auth.dart';", // Internal file exports barrel (not a cycle)
       );
@@ -121,11 +173,11 @@ void main() {
     });
 
     test('shows help message when --help flag is used', () async {
-      final result = await Process.run(
-        'dart',
-        ['run', 'barrel_file_lints:check_cycles', '--help'],
-        workingDirectory: Directory.current.path,
-      );
+      final result = await Process.run('dart', [
+        'run',
+        'barrel_file_lints:check_cycles',
+        '--help',
+      ], workingDirectory: Directory.current.path);
 
       expect(result.exitCode, 0);
       expect(result.stdout, contains('Barrel File Cycle Detector'));
@@ -148,8 +200,16 @@ void main() {
 
     test('allows one-way dependencies without cycles', () async {
       // a → b → c (no cycle)
-      _createFeature(libDir, 'a', exports: ["export 'package:test/feature_b/b.dart';"]);
-      _createFeature(libDir, 'b', exports: ["export 'package:test/feature_c/c.dart';"]);
+      _createFeature(
+        libDir,
+        'a',
+        exports: ["export 'package:test/feature_b/b.dart';"],
+      );
+      _createFeature(
+        libDir,
+        'b',
+        exports: ["export 'package:test/feature_c/c.dart';"],
+      );
       _createFeature(libDir, 'c', exports: []);
 
       final result = await _runCheckCycles(libDir);
@@ -160,7 +220,11 @@ void main() {
 
     test('handles self-exports gracefully', () async {
       // Feature exports itself (should not crash)
-      _createFeature(libDir, 'auth', exports: ["export 'package:test/feature_auth/auth.dart';"]);
+      _createFeature(
+        libDir,
+        'auth',
+        exports: ["export 'package:test/feature_auth/auth.dart';"],
+      );
 
       final result = await _runCheckCycles(libDir);
 
@@ -188,7 +252,10 @@ void _createFeature(
 }
 
 /// Helper to run the check_cycles CLI tool
-Future<ProcessResult> _runCheckCycles(String libDir, {bool verbose = false}) async {
+Future<ProcessResult> _runCheckCycles(
+  String libDir, {
+  bool verbose = false,
+}) async {
   final args = [
     'run',
     'barrel_file_lints:check_cycles',
@@ -196,9 +263,5 @@ Future<ProcessResult> _runCheckCycles(String libDir, {bool verbose = false}) asy
     if (verbose) '--verbose',
   ];
 
-  return Process.run(
-    'dart',
-    args,
-    workingDirectory: Directory.current.path,
-  );
+  return Process.run('dart', args, workingDirectory: Directory.current.path);
 }
