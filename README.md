@@ -108,6 +108,24 @@ import 'package:myapp/feature_auth/data/user_repository.dart';
 import 'package:myapp/feature_auth/auth.dart';
 ```
 
+### `avoid_cross_feature_barrel_exports`
+
+Barrel files must only export files from their own feature folder. This enforces proper feature boundaries and prevents coupling between features through re-exports.
+
+```dart
+// In lib/feature_auth/auth.dart (barrel file)
+
+// ✅ Correct - exporting own feature's files
+export 'data/auth_service.dart';
+export 'ui/login_page.dart';
+
+// ❌ Wrong - exporting from different feature
+export '../feature_users/data/user.dart';
+
+// ❌ Wrong - exporting from outside feature
+export '../common/widgets.dart';
+```
+
 ## Installation
 
 1. Add to `pubspec.yaml`:
@@ -126,6 +144,7 @@ import 'package:myapp/feature_auth/auth.dart';
          avoid_internal_feature_imports: true
          avoid_core_importing_features: true
          avoid_self_barrel_import: true
+         avoid_cross_feature_barrel_exports: true
    ```
 
 3. Install dependencies:
@@ -155,6 +174,7 @@ plugins:
       avoid_internal_feature_imports: true
       avoid_core_importing_features: true
       avoid_self_barrel_import: true
+      avoid_cross_feature_barrel_exports: true
 ```
 
 ### Moderate Mode
@@ -168,6 +188,7 @@ plugins:
       avoid_internal_feature_imports: true
       avoid_core_importing_features: true
       avoid_self_barrel_import: false  # Allow importing own barrel
+      avoid_cross_feature_barrel_exports: true
 ```
 
 ### Conservative Mode
@@ -181,6 +202,7 @@ plugins:
       avoid_internal_feature_imports: false
       avoid_core_importing_features: true  # Core stays independent
       avoid_self_barrel_import: false
+      avoid_cross_feature_barrel_exports: false
 ```
 
 ## Suppressing Warnings
@@ -217,7 +239,8 @@ lib/
 1. Features import other features via barrel files only (`feature_a/a.dart`)
 2. Core cannot import features (maintains independence)
 3. Files within same feature use direct imports (not own barrel)
-4. Test files are excluded from checks
+4. Barrel files only export from their own feature folder
+5. Test files are excluded from checks
 
 ## Troubleshooting
 

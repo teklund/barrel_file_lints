@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 This project follows [Conventional Commits](https://www.conventionalcommits.org/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- **feat(rules)**: add `avoid_cross_feature_barrel_exports` rule to ensure barrel files only export from their own feature folder
+- **test**: add 15 comprehensive tests for the new barrel exports rule
+
 ## [1.0.3] - 2025-11-25
 
 - **feat(rules)**: add `avoid_self_barrel_import` rule to prevent circular dependencies by blocking files from importing their own feature's barrel file
