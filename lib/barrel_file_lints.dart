@@ -3,6 +3,7 @@ library;
 
 import 'package:analysis_server_plugin/plugin.dart';
 import 'package:analysis_server_plugin/registry.dart';
+import 'package:barrel_file_lints/src/fixes/remove_cross_feature_export.dart';
 import 'package:barrel_file_lints/src/fixes/remove_feature_import.dart';
 import 'package:barrel_file_lints/src/fixes/replace_with_barrel_import.dart';
 import 'package:barrel_file_lints/src/rules/avoid_core_importing_features.dart';
@@ -10,6 +11,7 @@ import 'package:barrel_file_lints/src/rules/avoid_cross_feature_barrel_exports.d
 import 'package:barrel_file_lints/src/rules/avoid_internal_feature_imports.dart';
 import 'package:barrel_file_lints/src/rules/avoid_self_barrel_import.dart';
 
+export 'src/fixes/remove_cross_feature_export.dart';
 export 'src/fixes/remove_feature_import.dart';
 export 'src/fixes/replace_with_barrel_import.dart';
 export 'src/rules/avoid_core_importing_features.dart';
@@ -38,6 +40,10 @@ class BarrelFileLintPlugin extends Plugin {
       ..registerFixForRule(
         AvoidCoreImportingFeatures.code,
         RemoveFeatureImport.new,
+      )
+      ..registerFixForRule(
+        AvoidCrossFeatureBarrelExports.code,
+        RemoveCrossFeatureExport.new,
       );
   }
 }

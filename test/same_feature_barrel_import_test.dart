@@ -138,7 +138,7 @@ export 'data/auth_service.dart';
 export 'data/auth_service.dart';
 ''');
 
-    // Using relative import to own barrel - relative imports don't have feature path so won't be caught
+    // Using relative import to own barrel - should now be detected
     newFile('$testPackageRootPath/lib/feature_auth/data/auth_service.dart', '''
 // ignore: unused_import
 import '../auth.dart';
@@ -146,7 +146,46 @@ import '../auth.dart';
 class AuthService {}
 ''');
 
-    // Relative imports don't contain feature patterns, so this won't trigger
+    // Should trigger lint - importing own barrel via relative path
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/data/auth_service.dart',
+      [lint(25, 22)],
+    );
+  }
+
+  Future<void> test_relativeImportOwnBarrel_slash() async {
+    newFile('$testPackageRootPath/lib/features/trip/trip.dart', '''
+export 'data/trip_service.dart';
+''');
+
+    // Using relative import to own barrel from subdirectory
+    newFile('$testPackageRootPath/lib/features/trip/ui/trip_page.dart', '''
+// ignore: unused_import
+import '../trip.dart';
+
+class TripPage {}
+''');
+
+    // Should trigger lint - importing own barrel via relative path
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/features/trip/ui/trip_page.dart',
+      [lint(25, 22)],
+    );
+  }
+
+  Future<void> test_relativeImportInternalFile_allowed() async {
+    newFile('$testPackageRootPath/lib/feature_auth/data/user_repository.dart', '''
+class UserRepository {}
+''');
+
+    // Using relative import to internal file (not barrel) - should be allowed
+    newFile('$testPackageRootPath/lib/feature_auth/data/auth_service.dart', '''
+// ignore: unused_import
+import 'user_repository.dart';
+
+class AuthService {}
+''');
+
     await assertNoDiagnosticsInFile(
       '$testPackageRootPath/lib/feature_auth/data/auth_service.dart',
     );

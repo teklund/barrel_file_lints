@@ -68,7 +68,16 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
     final currentFeature = extractFeature(currentPath);
     if (currentFeature == null) return;
 
-    // Check if importing from same feature
+    // Handle relative imports (e.g., '../trip.dart' from 'feature_trip/ui/file.dart')
+    if (isRelativeUri(uri)) {
+      // Check if it's a relative path to the barrel file
+      if (_isRelativeBarrelImport(uri, currentFeature)) {
+        rule.reportAtNode(node, arguments: [currentFeature.featureDir]);
+        return;
+      }
+    }
+
+    // Handle absolute package imports
     final importedFeature = extractFeature(uri);
     if (importedFeature == null) return;
 
@@ -82,6 +91,16 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
         }
       }
     }
+  }
+
+  /// Check if a relative URI points to the barrel file
+  /// e.g., '../trip.dart' from 'feature_trip/ui/file.dart' should be detected
+  bool _isRelativeBarrelImport(String uri, FeatureMatch feature) {
+    // Remove any './' or '../' segments to get the filename
+    final fileName = uri.split('/').last;
+
+    // Check if filename matches the feature's barrel file name
+    return fileName == '${feature.featureName}.dart';
   }
 
   /// Check if the URI points to a barrel file
