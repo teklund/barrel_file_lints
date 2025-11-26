@@ -1,4 +1,5 @@
 #!/usr/bin/env dart
+// ignore_for_file: avoid_print
 
 /// CLI tool to detect transitive circular dependencies between barrel files
 ///
@@ -28,12 +29,7 @@ void main(List<String> arguments) async {
       defaultsTo: 'lib',
       help: 'Path to the lib directory to analyze',
     )
-    ..addFlag(
-      'verbose',
-      abbr: 'v',
-      defaultsTo: false,
-      help: 'Show verbose output',
-    )
+    ..addFlag('verbose', abbr: 'v', help: 'Show verbose output')
     ..addFlag('help', abbr: 'h', help: 'Show this help message');
 
   final results = parser.parse(arguments);
@@ -135,7 +131,7 @@ class CycleDetector {
   /// Find all barrel files in the lib directory
   Future<void> _findBarrelFiles() async {
     final libDirectory = Directory(libDir);
-    if (!await libDirectory.exists()) {
+    if (!libDirectory.existsSync()) {
       stderr.writeln('Error: Directory not found: $libDir');
       exit(2);
     }
@@ -244,12 +240,7 @@ class CycleDetector {
             return true;
           }
         } else if (recursionStack.contains(neighbor)) {
-          // Found a cycle! Extract it from the stack
-          final cycleStart = stack.indexOf(neighbor);
-          final cycle = stack.sublist(cycleStart);
-          cycle.add(neighbor); // Complete the cycle
-
-          // Convert paths to relative for display
+          // Found a cycle!
           return true;
         }
       }
