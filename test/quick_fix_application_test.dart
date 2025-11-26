@@ -1,34 +1,37 @@
+/// Tests for quick fix utility functions and helper methods
+///
+/// This file tests the utility functions that support quick fixes,
+/// including feature extraction, path analysis, and pattern matching.
+/// These are unit tests for the internal logic used by fix producers.
+///
+/// For integration tests of actual fix application, see quick_fixes_test.dart
+library;
+
 import 'package:barrel_file_lints/barrel_file_lints.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('Quick Fix Application', () {
-    test('ReplaceWithBarrelImport fix exists and is properly configured', () {
-      // Verify the fix exists and has correct metadata
-      expect(ReplaceWithBarrelImport, isNotNull);
-    });
-
-    test('RemoveFeatureImport fix exists and is properly configured', () {
-      // Verify the fix exists and has correct metadata
-      expect(RemoveFeatureImport, isNotNull);
-    });
-
-    test('RemoveCrossFeatureExport fix exists and is properly configured', () {
-      // Verify the fix exists and has correct metadata
-      expect(RemoveCrossFeatureExport, isNotNull);
-    });
-
-    test('All fixes are registered with the plugin', () {
+  group('Fix Infrastructure', () {
+    test('Plugin registers all quick fix producers', () {
       final plugin = BarrelFileLintPlugin();
       expect(plugin.name, 'barrel_file_lints');
 
-      // The plugin should register all fixes - verified by compilation
+      // The plugin should register all fixes in its register() method
       // If any fix was misconfigured, the plugin wouldn't compile
       expect(plugin, isNotNull);
     });
+
+    test('All quick fix classes are accessible', () {
+      // Verify all fix classes exist and can be referenced
+      expect(ReplaceWithBarrelImport, isNotNull);
+      expect(RemoveFeatureImport, isNotNull);
+      expect(RemoveCrossFeatureExport, isNotNull);
+      expect(RemoveSelfBarrelImport, isNotNull);
+      expect(SimplifyRelativePath, isNotNull);
+    });
   });
 
-  group('Fix Logic Verification', () {
+  group('Feature Extraction Utility', () {
     test('ReplaceWithBarrelImport handles underscore style feature names', () {
       // feature_auth/data/auth_service.dart -> feature_auth/auth.dart
       const input = 'package:test/feature_auth/data/auth_service.dart';

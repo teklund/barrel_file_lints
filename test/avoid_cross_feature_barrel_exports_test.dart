@@ -1,3 +1,11 @@
+/// Tests for avoid_cross_feature_barrel_exports rule
+///
+/// Test organization:
+/// - Valid cases: Barrel files exporting from their own feature
+/// - Invalid cases: Barrel files exporting from other features/directories
+/// - Edge cases: Complex paths, mixed styles, multiple violations
+library;
+
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 import 'package:barrel_file_lints/barrel_file_lints.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';
