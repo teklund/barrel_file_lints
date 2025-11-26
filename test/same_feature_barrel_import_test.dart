@@ -155,22 +155,22 @@ class AuthService {}
   }
 
   Future<void> test_relativeImportOwnBarrel_slash() async {
-    newFile('$testPackageRootPath/lib/features/trip/trip.dart', '''
-export 'data/trip_service.dart';
+    newFile('$testPackageRootPath/lib/features/catalog/catalog.dart', '''
+export 'data/catalog_service.dart';
 ''');
 
     // Using relative import to own barrel from subdirectory
-    newFile('$testPackageRootPath/lib/features/trip/ui/trip_page.dart', '''
+    newFile('$testPackageRootPath/lib/features/catalog/ui/catalog_page.dart', '''
 // ignore: unused_import
-import '../trip.dart';
+import '../catalog.dart';
 
-class TripPage {}
+class CatalogPage {}
 ''');
 
     // Should trigger lint - importing own barrel via relative path
     await assertDiagnosticsInFile(
-      '$testPackageRootPath/lib/features/trip/ui/trip_page.dart',
-      [lint(25, 22)],
+      '$testPackageRootPath/lib/features/catalog/ui/catalog_page.dart',
+      [lint(25, 25)],
     );
   }
 
@@ -197,24 +197,24 @@ class AuthService {}
 
   Future<void> test_redundantRelativePath_underscore() async {
     newFile(
-      '$testPackageRootPath/lib/feature_trip/data/extensions/trip_extensions.dart',
+      '$testPackageRootPath/lib/feature_order/data/extensions/order_extensions.dart',
       '''
-class TripExtensions {}
+class OrderExtensions {}
 ''',
     );
 
     // Using unnecessarily complex relative path that escapes and re-enters same feature
-    newFile('$testPackageRootPath/lib/feature_trip/data/trip_service.dart', '''
+    newFile('$testPackageRootPath/lib/feature_order/data/order_service.dart', '''
 // ignore: unused_import
-import '../../feature_trip/data/extensions/trip_extensions.dart';
+import '../../feature_order/data/extensions/order_extensions.dart';
 
-class TripService {}
+class OrderService {}
 ''');
 
     // Should trigger lint - unnecessarily complex relative path
     await assertDiagnosticsInFile(
-      '$testPackageRootPath/lib/feature_trip/data/trip_service.dart',
-      [lint(25, 65)],
+      '$testPackageRootPath/lib/feature_order/data/order_service.dart',
+      [lint(25, 67)],
     );
   }
 
@@ -275,6 +275,50 @@ class AuthService {}
 
     await assertNoDiagnosticsInFile(
       '$testPackageRootPath/lib/feature_auth/data/auth_service.dart',
+    );
+  }
+
+  Future<void> test_relativeImportFromUiToData_allowed() async {
+    newFile('$testPackageRootPath/lib/feature_user/data/models/user.dart', '''
+class User {}
+''');
+
+    // Direct relative import from ui/ to data/ within same feature - should be allowed
+    // This is a normal case: ui folder accessing data models
+    newFile('$testPackageRootPath/lib/feature_user/ui/user_page.dart', '''
+// ignore: unused_import
+import '../data/models/user.dart';
+
+class UserPage {}
+''');
+
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_user/ui/user_page.dart',
+    );
+  }
+
+  Future<void> test_relativeImportFromNestedUiToData_allowed() async {
+    newFile(
+      '$testPackageRootPath/lib/feature_profile/data/models/user_profile.dart',
+      '''
+class UserProfile {}
+''',
+    );
+
+    // Direct relative import from nested ui/parts/ to data/models/ - should be allowed
+    // Even with ../../ it's still a valid cross-directory import within same feature
+    newFile(
+      '$testPackageRootPath/lib/feature_profile/ui/parts/profile_widget.dart',
+      '''
+// ignore: unused_import
+import '../../data/models/user_profile.dart';
+
+class ProfileWidget {}
+''',
+    );
+
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_profile/ui/parts/profile_widget.dart',
     );
   }
 }

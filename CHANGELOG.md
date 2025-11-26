@@ -8,7 +8,7 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 - **feat(rules)**: add `avoid_cross_feature_barrel_exports` rule to ensure barrel files only export from their own feature folder
 - **feat(quickfix)**: add quick fix to remove cross-feature exports from barrel files
-- **fix(rules)**: `avoid_self_barrel_import` now correctly detects relative imports to own barrel file (e.g., `import '../trip.dart'` from `feature_trip/ui/file.dart`)
+- **fix(rules)**: `avoid_self_barrel_import` now correctly detects relative imports to own barrel file (e.g., `import '../auth.dart'` from `feature_auth/ui/file.dart`)
 - **test**: add 15 comprehensive tests for the new barrel exports rule
 - **test**: add 3 tests for relative barrel imports detection (underscore, slash, and internal file allowed)
 - **test**: add 24 comprehensive tests for quick fix logic and utility function verification

@@ -5,7 +5,10 @@ import 'package:analysis_server_plugin/plugin.dart';
 import 'package:analysis_server_plugin/registry.dart';
 import 'package:barrel_file_lints/src/fixes/remove_cross_feature_export.dart';
 import 'package:barrel_file_lints/src/fixes/remove_feature_import.dart';
+import 'package:barrel_file_lints/src/fixes/remove_self_barrel_import.dart';
 import 'package:barrel_file_lints/src/fixes/replace_with_barrel_import.dart';
+import 'package:barrel_file_lints/src/fixes/simplify_relative_path.dart';
+import 'package:barrel_file_lints/src/rules/avoid_barrel_cycle.dart';
 import 'package:barrel_file_lints/src/rules/avoid_core_importing_features.dart';
 import 'package:barrel_file_lints/src/rules/avoid_cross_feature_barrel_exports.dart';
 import 'package:barrel_file_lints/src/rules/avoid_internal_feature_imports.dart';
@@ -13,7 +16,10 @@ import 'package:barrel_file_lints/src/rules/avoid_self_barrel_import.dart';
 
 export 'src/fixes/remove_cross_feature_export.dart';
 export 'src/fixes/remove_feature_import.dart';
+export 'src/fixes/remove_self_barrel_import.dart';
 export 'src/fixes/replace_with_barrel_import.dart';
+export 'src/fixes/simplify_relative_path.dart';
+export 'src/rules/avoid_barrel_cycle.dart';
 export 'src/rules/avoid_core_importing_features.dart';
 export 'src/rules/avoid_cross_feature_barrel_exports.dart';
 export 'src/rules/avoid_internal_feature_imports.dart';
@@ -32,6 +38,7 @@ class BarrelFileLintPlugin extends Plugin {
       ..registerLintRule(AvoidCoreImportingFeatures())
       ..registerLintRule(AvoidSelfBarrelImport())
       ..registerLintRule(AvoidCrossFeatureBarrelExports())
+      ..registerLintRule(AvoidBarrelCycle())
       // Register quick fixes
       ..registerFixForRule(
         AvoidInternalFeatureImports.code,
@@ -44,6 +51,14 @@ class BarrelFileLintPlugin extends Plugin {
       ..registerFixForRule(
         AvoidCrossFeatureBarrelExports.code,
         RemoveCrossFeatureExport.new,
+      )
+      ..registerFixForRule(
+        AvoidSelfBarrelImport.code,
+        RemoveSelfBarrelImport.new,
+      )
+      ..registerFixForRule(
+        AvoidSelfBarrelImport.code,
+        SimplifyRelativePath.new,
       );
   }
 }

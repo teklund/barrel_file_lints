@@ -14,9 +14,9 @@ import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 /// or use unnecessarily complex relative paths within the same feature
 ///
 /// ✅ Correct: import 'package:myapp/feature_auth/data/auth_service.dart';
-/// ✅ Correct: import 'extensions/trip_extensions.dart'; (within same directory)
+/// ✅ Correct: import 'extensions/order_extensions.dart'; (within same directory)
 /// ❌ Wrong: import 'package:myapp/feature_auth/auth.dart'; (from within feature_auth)
-/// ❌ Wrong: import '../../feature_trip/data/extensions/file.dart'; (from within feature_trip)
+/// ❌ Wrong: import '../../feature_order/data/extensions/file.dart'; (from within feature_order)
 class AvoidSelfBarrelImport extends AnalysisRule {
   /// Creates a new instance of [AvoidSelfBarrelImport]
   AvoidSelfBarrelImport()
@@ -71,7 +71,7 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
     final currentFeature = extractFeature(currentPath);
     if (currentFeature == null) return;
 
-    // Handle relative imports (e.g., '../trip.dart' from 'feature_trip/ui/file.dart')
+    // Handle relative imports (e.g., '../auth.dart' from 'feature_auth/ui/file.dart')
     if (isRelativeUri(uri)) {
       // Check if it's a relative path to the barrel file
       if (_isRelativeBarrelImport(uri, currentFeature)) {
@@ -80,7 +80,7 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
       }
 
       // Check if it's a complex relative path that re-enters the same feature
-      // e.g., '../../feature_trip/data/file.dart' from within feature_trip
+      // e.g., '../../feature_order/data/file.dart' from within feature_order
       if (_isRedundantRelativePath(uri, currentFeature)) {
         rule.reportAtNode(node, arguments: [currentFeature.featureDir]);
         return;
@@ -104,17 +104,63 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
   }
 
   /// Check if a relative URI points to the barrel file
-  /// e.g., '../trip.dart' from 'feature_trip/ui/file.dart' should be detected
+  /// e.g., '../auth.dart' from 'feature_auth/ui/file.dart' should be detected
+  /// But '../item.dart' from 'feature_store/data/models/legacy/file.dart' should NOT
+  /// (that would resolve to models/item.dart, not the barrel)
   bool _isRelativeBarrelImport(String uri, FeatureMatch feature) {
-    // Remove any './' or '../' segments to get the filename
-    final fileName = uri.split('/').last;
+    final segments = uri.split('/');
+    final fileName = segments.last;
 
     // Check if filename matches the feature's barrel file name
-    return fileName == '${feature.featureName}.dart';
+    if (fileName != '${feature.featureName}.dart') {
+      return false;
+    }
+
+    // To be a barrel import, the path should NOT contain internal directories
+    // and must have the right number of '../' to reach the feature root
+    if (isInternalImport(uri)) {
+      return false;
+    }
+
+    // Count how many levels up we're going
+    final upLevels = '../'.allMatches(uri).length;
+
+    // Get the current file's path depth within the feature
+    final currentPath = context.libraryElement?.uri.toString() ?? '';
+    final currentDepth = _getDepthWithinFeature(currentPath, feature);
+
+    // For this to be a barrel import, we need to go up exactly to the feature root
+    // e.g., from feature_auth/ui/file.dart (depth 1), '../auth.dart' reaches the barrel
+    // but from feature_store/data/models/legacy/file.dart (depth 3), '../item.dart'
+    // only goes to models/item.dart, not the barrel
+    return upLevels == currentDepth;
+  }
+
+  /// Get the depth of the current file within its feature directory
+  /// e.g., feature_auth/ui/file.dart has depth 1 (one level below feature root)
+  ///       feature_store/data/models/legacy/file.dart has depth 3
+  int _getDepthWithinFeature(String path, FeatureMatch feature) {
+    // Find where the feature directory appears in the path
+    final featureIndex = path.indexOf(feature.featureDir);
+    if (featureIndex == -1) return 0;
+
+    // Get the part after the feature directory
+    final afterFeature = path.substring(
+      featureIndex + feature.featureDir.length,
+    );
+
+    // Remove the filename itself
+    final lastSlash = afterFeature.lastIndexOf('/');
+    if (lastSlash == -1) return 0; // File is at feature root
+
+    final directoryPath = afterFeature.substring(0, lastSlash);
+
+    // Count the slashes to get depth
+    return '/'.allMatches(directoryPath).length;
   }
 
   /// Check if a relative path unnecessarily escapes and re-enters the same feature
-  /// e.g., '../../feature_trip/data/extensions/file.dart' from within feature_trip
+  /// e.g., '../../feature_order/data/extensions/file.dart' from within feature_order
   bool _isRedundantRelativePath(String uri, FeatureMatch currentFeature) {
     // Only check paths that go up with ../
     if (!uri.contains('../')) return false;

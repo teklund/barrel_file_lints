@@ -14,9 +14,9 @@ A Dart 3.10+ analyzer plugin that enforces barrel file import rules for feature-
 - [What are Barrel Files?](#what-are-barrel-files)
 - [Why Use This Plugin?](#why-use-this-plugin)
 - [Features](#features)
-- [Installation](#installation)
-- [Configuration Presets](#configuration-presets)
+- [Getting Started](#getting-started)
 - [Rules](#rules)
+- [CLI Tool: Cycle Detection](#cli-tool-cycle-detection)
 - [Suppressing Warnings](#suppressing-warnings)
 - [Architecture Pattern](#architecture-pattern)
 - [Troubleshooting](#troubleshooting)
@@ -62,6 +62,57 @@ Automatically prevents developers from bypassing barrel files and importing inte
 - Configurable rules with automatic quick fixes
 - Supports `feature_xxx/` and `features/xxx/` naming conventions
 
+## Getting Started
+
+### Installation
+
+1. Add to `pubspec.yaml`:
+
+   ```yaml
+   dev_dependencies:
+     barrel_file_lints: ^1.0.0
+   ```
+
+2. Install dependencies:
+
+   ```bash
+   dart pub get
+   # or
+   flutter pub get
+   ```
+
+3. Restart your IDE for the plugin to take effect.
+
+### Configuration
+
+Enable the rules you want in `analysis_options.yaml`:
+
+```yaml
+plugins:
+  barrel_file_lints:
+    diagnostics:
+      # Enforce barrel file imports between features
+      avoid_internal_feature_imports: true
+      
+      # Prevent core module from depending on features
+      avoid_core_importing_features: true
+      
+      # Prevent files from importing their own barrel
+      # Set to false if you prefer allowing self-barrel imports
+      avoid_self_barrel_import: true
+      
+      # Prevent barrels from exporting other features
+      avoid_cross_feature_barrel_exports: true
+      
+      # Detect immediate circular dependencies between barrels
+      # Use CLI tool for transitive cycle detection
+      avoid_barrel_cycle: true
+```
+
+**Note:** Rules are disabled by default. Explicitly enable the rules that match your architecture needs.
+
+**Verify it's working** by running `dart analyze` or `flutter analyze`.
+
 ## Rules
 
 ### `avoid_internal_feature_imports`
@@ -96,17 +147,26 @@ import 'package:myapp/feature_auth/auth.dart';
 
 ### `avoid_self_barrel_import`
 
-Files within a feature should not import their own feature's barrel file. This prevents circular dependencies and enforces direct imports within feature boundaries.
+Files within a feature should not import their own feature's barrel file or use unnecessarily complex relative paths within the same feature. This prevents circular dependencies and enforces direct imports within feature boundaries.
 
 ```dart
 // In lib/feature_auth/data/auth_service.dart
 
 // ✅ Correct - direct import within same feature
 import 'package:myapp/feature_auth/data/user_repository.dart';
+import 'extensions/auth_extensions.dart';
 
 // ❌ Wrong - importing own barrel (circular dependency risk)
 import 'package:myapp/feature_auth/auth.dart';
+
+// ❌ Wrong - unnecessarily complex relative path within same feature
+import '../../feature_auth/data/extensions/auth_extensions.dart';
 ```
+
+**Quick Fixes:**
+
+- **Remove self-barrel import**: Removes the circular import when importing own barrel
+- **Simplify relative path**: Converts redundant paths like `'../../feature_auth/data/file.dart'` → `'file.dart'` or `'data/file.dart'`
 
 ### `avoid_cross_feature_barrel_exports`
 
@@ -126,84 +186,50 @@ export '../feature_users/data/user.dart';
 export '../common/widgets.dart';
 ```
 
-## Installation
+**Quick Fix:** Removes the cross-feature export directive.
 
-1. Add to `pubspec.yaml`:
+### `avoid_barrel_cycle`
 
-   ```yaml
-   dev_dependencies:
-     barrel_file_lints: ^1.0.0
-   ```
+Barrel files should not create immediate circular dependencies where two barrels export each other.
 
-2. Enable in `analysis_options.yaml`:
+```dart
+// In lib/feature_auth/auth.dart
+// ❌ Wrong - exports feature_profile barrel
+export '../feature_profile/profile.dart';
 
-   ```yaml
-   plugins:
-     barrel_file_lints:
-       diagnostics:
-         avoid_internal_feature_imports: true
-         avoid_core_importing_features: true
-         avoid_self_barrel_import: true
-         avoid_cross_feature_barrel_exports: true
-   ```
-
-3. Install dependencies:
-
-   ```bash
-   dart pub get
-   # or
-   flutter pub get
-   ```
-
-4. Restart your IDE for the plugin to take effect.
-
-Verify it's working by running `dart analyze` or `flutter analyze`.
-
-## Configuration Presets
-
-Choose a configuration that matches your project's needs:
-
-### Strict Mode (Recommended)
-
-Enforce all architectural rules for maximum consistency:
-
-```yaml
-plugins:
-  barrel_file_lints:
-    diagnostics:
-      avoid_internal_feature_imports: true
-      avoid_core_importing_features: true
-      avoid_self_barrel_import: true
-      avoid_cross_feature_barrel_exports: true
+// In lib/feature_profile/profile.dart
+// ❌ Wrong - exports feature_auth barrel (creates cycle)
+export '../feature_auth/auth.dart';
 ```
 
-### Moderate Mode
+This rule detects **immediate 2-node cycles** during development. For detecting **transitive cycles** (A → B → C → A), use the [CLI tool](#cli-tool-cycle-detection).
 
-Focus on cross-feature boundaries while allowing flexibility within features:
+## CLI Tool: Cycle Detection
 
-```yaml
-plugins:
-  barrel_file_lints:
-    diagnostics:
-      avoid_internal_feature_imports: true
-      avoid_core_importing_features: true
-      avoid_self_barrel_import: false  # Allow importing own barrel
-      avoid_cross_feature_barrel_exports: true
+For comprehensive cycle detection beyond immediate 2-node cycles, use the included CLI tool:
+
+```bash
+# Check for all circular dependencies
+dart run barrel_file_lints:check_cycles
+
+# Specify a custom directory
+dart run barrel_file_lints:check_cycles --lib-dir=packages/my_package/lib
+
+# Verbose output
+dart run barrel_file_lints:check_cycles --verbose
 ```
 
-### Conservative Mode
+### CI/CD Integration
 
-Only enforce core separation to prevent dependency cycles:
+Add to your CI pipeline to prevent circular dependencies:
 
 ```yaml
-plugins:
-  barrel_file_lints:
-    diagnostics:
-      avoid_internal_feature_imports: false
-      avoid_core_importing_features: true  # Core stays independent
-      avoid_self_barrel_import: false
-      avoid_cross_feature_barrel_exports: false
+# .github/workflows/ci.yml
+- name: Check barrel file cycles
+  run: dart run barrel_file_lints:check_cycles
 ```
+
+See [bin/README.md](bin/README.md) for detailed documentation.
 
 ## Suppressing Warnings
 

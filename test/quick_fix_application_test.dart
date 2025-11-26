@@ -181,21 +181,21 @@ void main() {
     });
 
     test('IsBarrelFile works with slash style', () {
-      const tripPath = 'package:test/features/trip/trip.dart';
-      final tripFeature = extractFeature(tripPath);
+      const catalogPath = 'package:test/features/catalog/catalog.dart';
+      final catalogFeature = extractFeature(catalogPath);
 
-      expect(isBarrelFile(tripPath, tripFeature!), isTrue);
+      expect(isBarrelFile(catalogPath, catalogFeature!), isTrue);
       expect(
         isBarrelFile(
-          'package:test/features/trip/data/trip_service.dart',
-          tripFeature,
+          'package:test/features/catalog/data/catalog_service.dart',
+          catalogFeature,
         ),
         isFalse,
       );
       expect(
         isBarrelFile(
-          'package:test/features/trip/ui/trip_page.dart',
-          tripFeature,
+          'package:test/features/catalog/ui/catalog_page.dart',
+          catalogFeature,
         ),
         isFalse,
       );
