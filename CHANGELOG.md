@@ -4,10 +4,13 @@ All notable changes to this project will be documented in this file.
 
 This project follows [Conventional Commits](https://www.conventionalcommits.org/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.5] - 2025-12-05
 
 - **feat(rules)**: add `avoid_flutter_in_domain` rule to enforce framework independence in domain/data layers by preventing Flutter imports
-- **docs**: add comprehensive documentation for `avoid_flutter_in_domain` rule with examples and rationale
+- **feat(rules)**: add `avoid_improper_layer_import` rule to enforce clean architecture layer boundaries (UI → Data → Domain)
+- **feat(quickfix)**: add quick fix to suggest layer-specific barrel imports (e.g., `xxx_data.dart` instead of `xxx.dart`) when available
+- **docs**: add comprehensive documentation and examples for new rules
+- **docs**: add "Setting Up Split Barrel Files" guide to README
 
 ## [1.0.4] - 2025-11-26
 
