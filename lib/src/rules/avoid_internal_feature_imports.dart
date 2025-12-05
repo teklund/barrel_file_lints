@@ -79,17 +79,44 @@ class _InternalImportVisitor extends SimpleAstVisitor<void> {
 
     // If importing from a different feature
     if (importedFeature.featureDir != currentFeature?.featureDir) {
+      // Check if it's a split barrel import - these are allowed
+      final barrelType = getBarrelType(uri, importedFeature);
+      if (barrelType == BarrelType.splitData ||
+          barrelType == BarrelType.splitDomain ||
+          barrelType == BarrelType.splitUi ||
+          barrelType == BarrelType.monolithic) {
+        // This is a barrel import, allowed
+        return;
+      }
+
       // Check if it's an internal import (contains /data/ or /ui/)
       if (isInternalImport(uri)) {
-        // Build the suggested barrel file path
+        // Determine the layer to suggest appropriate barrel
+        final importLayer = getLayerFromPath(uri);
+        final barrelSuffix = _getBarrelSuffix(importLayer);
+
         final barrelFile =
-            '${importedFeature.featureDir}/${importedFeature.featureName}.dart';
+            '${importedFeature.featureDir}/${importedFeature.featureName}$barrelSuffix.dart';
 
         rule.reportAtNode(
           node,
           arguments: [importedFeature.featureDir, barrelFile],
         );
       }
+    }
+  }
+
+  /// Get the barrel suffix based on the layer
+  String _getBarrelSuffix(ArchLayer layer) {
+    switch (layer) {
+      case ArchLayer.data:
+        return '_data';
+      case ArchLayer.domain:
+        return '_domain';
+      case ArchLayer.ui:
+        return '_ui';
+      case ArchLayer.unknown:
+        return ''; // Default to monolithic barrel
     }
   }
 }
