@@ -82,13 +82,15 @@ Add this to your CI pipeline to prevent circular dependencies:
 3. Uses depth-first search to detect cycles
 4. Reports all cycles found
 
-## Complementary to Plugin Rule
+## Performance Note
 
-The analyzer plugin includes `avoid_barrel_cycle` which detects **immediate** (2-node) cycles during development. This CLI tool provides comprehensive analysis for:
+This CLI tool is the **only** cycle detection method provided by this package. Previously, there was a real-time analyzer rule (`avoid_barrel_cycle`), but it was removed due to performance concerns (synchronous file I/O).
 
-- Transitive cycles (A → B → C → A)
-- Full project analysis
-- CI/CD integration
-- Batch checking
+This CLI tool provides:
 
-Use both for comprehensive protection against circular dependencies!
+- **Comprehensive analysis**: Detects both immediate (A ↔ B) and transitive cycles (A → B → C → A)
+- **Full project scanning**: Analyzes all barrel files at once
+- **CI/CD integration**: Perfect for pipeline checks
+- **Zero runtime overhead**: Runs on-demand, not during every analysis
+
+Run this tool periodically or integrate it into your CI/CD pipeline for complete cycle detection!

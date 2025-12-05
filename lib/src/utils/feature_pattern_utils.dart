@@ -61,6 +61,15 @@ enum BarrelType {
   notBarrel,
 }
 
+// Pre-compiled regex patterns for performance optimization
+// These are computed once at load time instead of on every function call
+final _underscorePattern = RegExp(r'feature_([^/]+)');
+final _slashPattern = RegExp(r'features/([^/]+)');
+final _exportPattern = RegExp(
+  r'''export\s+['"]([^'"]+)['"]''',
+  multiLine: true,
+);
+
 /// Extracts feature information from a file path or URI.
 ///
 /// Supports both common feature directory patterns: `feature_xxx/` (underscore
@@ -68,7 +77,7 @@ enum BarrelType {
 /// feature pattern is found.
 FeatureMatch? extractFeature(String path) {
   // Try underscore style first: feature_xxx
-  final underscoreMatch = RegExp(r'feature_([^/]+)').firstMatch(path);
+  final underscoreMatch = _underscorePattern.firstMatch(path);
   if (underscoreMatch != null) {
     final name = underscoreMatch.group(1)!;
     return FeatureMatch(
@@ -79,7 +88,7 @@ FeatureMatch? extractFeature(String path) {
   }
 
   // Try clean architecture style: features/xxx
-  final slashMatch = RegExp(r'features/([^/]+)').firstMatch(path);
+  final slashMatch = _slashPattern.firstMatch(path);
   if (slashMatch != null) {
     final name = slashMatch.group(1)!;
     return FeatureMatch(
@@ -244,10 +253,8 @@ BarrelType getBarrelType(String path, FeatureMatch feature) {
   final fileName = segments.isNotEmpty ? segments.last : '';
 
   // Check if it's at the feature root
-  final atFeatureRoot = RegExp(
-    '${feature.featureDir}/[^/]+\\.dart',
-  ).hasMatch(path);
-  if (!atFeatureRoot) return BarrelType.notBarrel;
+  final atFeatureRootPattern = RegExp('${feature.featureDir}/[^/]+\\.dart');
+  if (!atFeatureRootPattern.hasMatch(path)) return BarrelType.notBarrel;
 
   // Check for split barrel patterns
   if (fileName == '${feature.featureName}_data.dart' ||
@@ -316,17 +323,8 @@ ArchLayer getLayerFromPath(String path) {
 /// recognizable layers are found.
 Future<Set<ArchLayer>> analyzeBarrelExports(String barrelContent) async {
   final layers = <ArchLayer>{};
-  final exportPattern = RegExp(
-    r'export\s+['
-    "'"
-    r'"]([^'
-    "'"
-    r'"]+)['
-    "'"
-    r'"]',
-  );
 
-  for (final match in exportPattern.allMatches(barrelContent)) {
+  for (final match in _exportPattern.allMatches(barrelContent)) {
     final exportPath = match.group(1);
     if (exportPath != null) {
       final layer = getLayerFromPath(exportPath);

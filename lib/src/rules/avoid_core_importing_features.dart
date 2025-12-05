@@ -54,6 +54,10 @@ class _CoreImportVisitor extends SimpleAstVisitor<void> {
 
     // Check if current file is in core/
     final currentPath = context.libraryElement?.uri.toString() ?? '';
+
+    // Skip test files (early exit for performance)
+    if (isTestFile(currentPath)) return;
+
     if (!_isInCore(currentPath)) return;
 
     // Check if importing from a feature

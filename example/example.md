@@ -18,7 +18,6 @@ plugins:
       avoid_core_importing_features: true
       avoid_self_barrel_import: true
       avoid_cross_feature_barrel_exports: true
-      avoid_barrel_cycle: true
 ```
 
 ## 3. Example violations
@@ -86,17 +85,13 @@ export 'data/auth_service.dart';
 export '../feature_profile/data/user.dart';
 ```
 
-### Bad: Barrel cycle
+**Note:** For detecting circular dependencies between barrel files, use the CLI tool:
 
-```dart
-// lib/feature_auth/auth.dart
-// ❌ This will trigger avoid_barrel_cycle
-export '../feature_profile/profile.dart';
-
-// lib/feature_profile/profile.dart
-// ❌ Creates a cycle back to auth
-export '../feature_auth/auth.dart';
+```bash
+dart run barrel_file_lints:check_cycles
 ```
+
+This detects both immediate (A ↔ B) and transitive cycles (A → B → C → A).
 
 ### Bad: Improper layer import
 

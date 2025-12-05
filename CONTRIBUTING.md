@@ -180,7 +180,6 @@ barrel_file_lints/
 │   ├── barrel_file_lints.dart       # Main export file
 │   └── src/
 │       ├── rules/                   # Lint rules
-│       │   ├── avoid_barrel_cycle.dart
 │       │   ├── avoid_core_importing_features.dart
 │       │   ├── avoid_cross_feature_barrel_exports.dart
 │       │   ├── avoid_flutter_in_domain.dart
@@ -200,7 +199,6 @@ barrel_file_lints/
 │   ├── check_cycles.dart            # CLI tool for cycle detection
 │   └── README.md
 ├── test/
-│   ├── avoid_barrel_cycle_test.dart
 │   ├── avoid_core_importing_features_test.dart
 │   ├── avoid_cross_feature_barrel_exports_test.dart
 │   ├── avoid_flutter_in_domain_test.dart

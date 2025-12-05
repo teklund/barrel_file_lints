@@ -140,10 +140,6 @@ plugins:
       # Prevent barrels from exporting other features
       avoid_cross_feature_barrel_exports: true
       
-      # Detect immediate circular dependencies between barrels
-      # Use CLI tool for transitive cycle detection
-      avoid_barrel_cycle: true
-      
       # Enforce clean architecture layer boundaries (split barrels)
       # Warns when data/domain layers import barrels with UI exports
       avoid_improper_layer_import: true
@@ -251,22 +247,6 @@ export '../common/widgets.dart';
 ```
 
 **Quick Fix:** Removes the cross-feature export directive.
-
-### `avoid_barrel_cycle`
-
-Barrel files should not create immediate circular dependencies where two barrels export each other.
-
-```dart
-// In lib/feature_auth/auth.dart
-// ❌ Wrong - exports feature_profile barrel
-export '../feature_profile/profile.dart';
-
-// In lib/feature_profile/profile.dart
-// ❌ Wrong - exports feature_auth barrel (creates cycle)
-export '../feature_auth/auth.dart';
-```
-
-This rule detects **immediate 2-node cycles** during development. For detecting **transitive cycles** (A → B → C → A), use the [CLI tool](#cli-tool-cycle-detection).
 
 ### `avoid_improper_layer_import`
 
