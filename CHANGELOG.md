@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 This project follows [Conventional Commits](https://www.conventionalcommits.org/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- **feat(rules)**: add `avoid_flutter_in_domain` rule to enforce framework independence in domain/data layers by preventing Flutter imports
+- **docs**: add comprehensive documentation for `avoid_flutter_in_domain` rule with examples and rationale
+
 ## [1.0.4] - 2025-11-26
 
 - **feat(rules)**: add `avoid_cross_feature_barrel_exports` rule to ensure barrel files only export from their own feature folder

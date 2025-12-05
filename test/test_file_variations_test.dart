@@ -1,3 +1,11 @@
+/// Tests for test file exclusions
+///
+/// Verifies that files in test directories are exempt from lint rules:
+/// - test/ directory
+/// - test_driver/ directory
+/// - integration_test/ directory
+/// - Files ending with _test.dart
+
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 import 'package:barrel_file_lints/barrel_file_lints.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';

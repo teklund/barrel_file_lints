@@ -17,6 +17,7 @@ A Dart 3.10+ analyzer plugin that enforces barrel file import rules for feature-
 - [Getting Started](#getting-started)
 - [Rules](#rules)
 - [CLI Tool: Cycle Detection](#cli-tool-cycle-detection)
+- [Setting Up Split Barrel Files](#setting-up-split-barrel-files)
 - [Suppressing Warnings](#suppressing-warnings)
 - [Architecture Pattern](#architecture-pattern)
 - [Troubleshooting](#troubleshooting)
@@ -146,6 +147,10 @@ plugins:
       # Enforce clean architecture layer boundaries (split barrels)
       # Warns when data/domain layers import barrels with UI exports
       avoid_improper_layer_import: true
+      
+      # Prevent Flutter framework imports in domain/data layers
+      # Enforces framework-agnostic business logic
+      avoid_flutter_in_domain: true
 ```
 
 **Note:** Rules are disabled by default. Explicitly enable the rules that match your architecture needs.
@@ -296,7 +301,77 @@ import 'package:myapp/feature_b/b.dart';  // ⚠️ Warning: barrel exports UI l
 - **Data layer** (infrastructure): Can import Domain layer (implements domain interfaces). Cannot import UI layer. Contains repositories, data sources.
 - **UI layer** (presentation/outermost): Can import Domain and Data layers (no restrictions). Contains widgets, screens, state management.
 
-**Quick Fix:** Suggests using layer-specific barrel imports (e.g., `xxx_data.dart` instead of `xxx.dart`) when available.
+**Quick Fix:** When available, suggests using layer-specific barrel imports (e.g., `xxx_data.dart` instead of `xxx.dart`). Note: This quick fix is only available when layer-specific barrels exist in the imported feature.
+
+### `avoid_flutter_in_domain`
+
+Enforces framework independence in Domain and Data layers by preventing Flutter framework imports. Domain layer should contain pure business logic without UI dependencies. Data layer should implement domain interfaces without UI framework coupling.
+
+```dart
+// In lib/feature_auth/domain/use_cases/login.dart
+
+// ✅ Correct - Dart core libraries are allowed
+import 'dart:async';
+import 'package:meta/meta.dart';
+
+// ✅ Correct - Domain interfaces
+import '../repositories/auth_repository.dart';
+
+// ❌ Wrong - Flutter framework in domain layer
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+```
+
+```dart
+// In lib/feature_auth/data/repositories/auth_repository_impl.dart
+
+// ✅ Correct - Dart libraries and external packages
+import 'dart:convert';
+import 'package:http/http.dart';
+
+// ✅ Correct - Domain interfaces
+import '../../domain/repositories/auth_repository.dart';
+
+// ❌ Wrong - Flutter framework in data layer
+import 'package:flutter/foundation.dart';  // Use dart:io for platform detection
+import 'package:flutter/services.dart';
+```
+
+```dart
+// In lib/feature_auth/ui/pages/login_page.dart
+
+// ✅ Correct - Flutter is allowed in UI/presentation layer
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+
+// ✅ Correct - Domain use cases
+import '../../domain/use_cases/login.dart';
+```
+
+#### Allowed Imports in Domain/Data Layers
+
+- `dart:*` (all Dart core libraries)
+- `package:meta/meta.dart` (annotations like `@immutable`)
+- Internal feature imports and barrel files
+- External non-Flutter packages (e.g., `package:http`, `package:dio`)
+- Test files can import `package:flutter_test/flutter_test.dart`
+
+#### Forbidden Imports in Domain/Data Layers
+
+- `package:flutter/material.dart`
+- `package:flutter/widgets.dart`
+- `package:flutter/cupertino.dart`
+- `package:flutter/foundation.dart`
+- Any other `package:flutter/*` (except `flutter_test` in test files)
+
+**Rationale:** Following Clean Architecture principles, the domain layer represents pure business logic that should be framework-agnostic. This enables:
+
+- Testing without Flutter framework dependencies
+- Potential code reuse across platforms (e.g., backend, CLI tools)
+- Clear separation of concerns
+- Easier migration to different UI frameworks if needed
+
+**Note:** Test files (`*_test.dart` or files in `test/`, `test_driver/`, `integration_test/` directories) are exempt from this rule and can import Flutter testing utilities.
 
 ## CLI Tool: Cycle Detection
 

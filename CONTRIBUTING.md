@@ -176,20 +176,51 @@ BREAKING CHANGE: Plugin.register() now requires PluginRegistry parameter
 ```text
 barrel_file_lints/
 ├── lib/
-│   ├── main.dart              # Plugin entry point
-│   └── barrel_file_lints.dart # Rules & quick fixes
+│   ├── main.dart                    # Plugin entry point (required by analysis server)
+│   ├── barrel_file_lints.dart       # Main export file
+│   └── src/
+│       ├── rules/                   # Lint rules
+│       │   ├── avoid_barrel_cycle.dart
+│       │   ├── avoid_core_importing_features.dart
+│       │   ├── avoid_cross_feature_barrel_exports.dart
+│       │   ├── avoid_flutter_in_domain.dart
+│       │   ├── avoid_improper_layer_import.dart
+│       │   ├── avoid_internal_feature_imports.dart
+│       │   └── avoid_self_barrel_import.dart
+│       ├── fixes/                   # Quick fixes
+│       │   ├── remove_cross_feature_export.dart
+│       │   ├── remove_feature_import.dart
+│       │   ├── remove_self_barrel_import.dart
+│       │   ├── replace_with_barrel_import.dart
+│       │   ├── simplify_relative_path.dart
+│       │   └── use_layer_specific_barrel.dart
+│       └── utils/                   # Shared utilities
+│           └── feature_pattern_utils.dart
+├── bin/
+│   ├── check_cycles.dart            # CLI tool for cycle detection
+│   └── README.md
 ├── test/
-│   ├── avoid_internal_feature_imports_test.dart
+│   ├── avoid_barrel_cycle_test.dart
 │   ├── avoid_core_importing_features_test.dart
-│   ├── relative_imports_test.dart
+│   ├── avoid_cross_feature_barrel_exports_test.dart
+│   ├── avoid_flutter_in_domain_test.dart
+│   ├── avoid_internal_feature_imports_test.dart
 │   ├── additional_internal_directories_test.dart
-│   ├── test_file_variations_test.dart
+│   ├── cli_check_cycles_test.dart
 │   ├── edge_cases_test.dart
-│   └── quick_fixes_test.dart
+│   ├── quick_fix_application_test.dart
+│   ├── quick_fixes_test.dart
+│   ├── relative_imports_test.dart
+│   ├── relative_path_depth_test.dart
+│   ├── same_feature_barrel_import_test.dart
+│   ├── split_barrel_and_layer_test.dart
+│   └── test_file_variations_test.dart
 └── .github/
     └── workflows/
         ├── ci.yml
-        └── publish.yml
+        ├── publish.yml
+        ├── lint_pr.yml
+        └── commit_lint.yml
 ```
 
 ## Writing Lint Rules

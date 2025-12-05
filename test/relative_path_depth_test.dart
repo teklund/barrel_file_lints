@@ -1,5 +1,4 @@
 /// Tests for relative imports at different directory depths
-library;
 
 import 'package:analyzer/error/error.dart';
 import 'package:analyzer/src/error/codes.dart';

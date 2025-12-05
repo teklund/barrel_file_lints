@@ -5,7 +5,6 @@
 /// These are unit tests for the internal logic used by fix producers.
 ///
 /// For integration tests of actual fix application, see quick_fixes_test.dart
-library;
 
 import 'package:barrel_file_lints/barrel_file_lints.dart';
 import 'package:test/test.dart';

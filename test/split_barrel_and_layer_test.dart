@@ -1,5 +1,4 @@
 /// Tests for split barrel file support and layer-aware imports
-library;
 
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 import 'package:barrel_file_lints/barrel_file_lints.dart';

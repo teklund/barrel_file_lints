@@ -1,3 +1,10 @@
+/// Tests for relative import support in avoid_internal_feature_imports rule
+///
+/// Test organization:
+/// - Valid cases: Relative barrel file imports (../../feature_xxx/xxx.dart)
+/// - Invalid cases: Relative internal imports (../../feature_xxx/data/...)
+/// - Coverage: Both naming conventions and various relative path depths
+
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 import 'package:barrel_file_lints/barrel_file_lints.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';

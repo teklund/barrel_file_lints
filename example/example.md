@@ -98,6 +98,66 @@ export '../feature_profile/profile.dart';
 export '../feature_auth/auth.dart';
 ```
 
+### Bad: Improper layer import
+
+```dart
+// lib/feature_profile/data/profile_repository.dart
+
+// ❌ This will trigger avoid_improper_layer_import
+// (if feature_settings/settings.dart exports UI layer)
+import 'package:myapp/feature_settings/settings.dart';
+
+class ProfileRepository {
+  // Data layer should not depend on UI layer
+}
+```
+
+### Good: Layer-specific barrel import
+
+```dart
+// lib/feature_profile/data/profile_repository.dart
+
+// ✅ Use layer-specific barrel
+import 'package:myapp/feature_settings/settings_data.dart';
+
+class ProfileRepository {
+  // Only imports data layer
+}
+```
+
+### Bad: Flutter in domain layer
+
+```dart
+// lib/feature_auth/domain/use_cases/login_use_case.dart
+
+// ❌ This will trigger avoid_flutter_in_domain
+import 'package:flutter/material.dart';
+
+class LoginUseCase {
+  // Domain layer should be framework-agnostic
+}
+```
+
+### Good: Framework-agnostic domain
+
+```dart
+// lib/feature_auth/domain/use_cases/login_use_case.dart
+
+import 'dart:async';
+import '../repositories/auth_repository.dart';
+
+// ✅ Pure Dart, no Flutter dependencies
+class LoginUseCase {
+  final AuthRepository _repository;
+  
+  LoginUseCase(this._repository);
+  
+  Future<void> execute(String email, String password) async {
+    // Business logic only
+  }
+}
+```
+
 ## 4. Run analysis
 
 ```bash

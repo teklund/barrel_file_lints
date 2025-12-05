@@ -5,7 +5,6 @@
 /// - Invalid cases: Files importing their own feature's barrel file
 /// - Redundant paths: Complex relative paths that escape and re-enter same feature
 /// - Coverage: Package imports, relative imports, deeply nested paths
-library;
 
 import 'package:analyzer/error/error.dart';
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';

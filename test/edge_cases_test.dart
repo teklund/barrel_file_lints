@@ -1,3 +1,11 @@
+/// Edge case tests for avoid_internal_feature_imports rule
+///
+/// Test organization:
+/// - Deep nesting scenarios
+/// - Mixed naming conventions (feature_xxx importing features/xxx)
+/// - Special directories (common, core, non-feature paths)
+/// - Edge cases: empty names, numbers, underscores, very long paths
+
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 import 'package:barrel_file_lints/barrel_file_lints.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';

@@ -12,6 +12,7 @@ import 'package:barrel_file_lints/src/fixes/use_layer_specific_barrel.dart';
 import 'package:barrel_file_lints/src/rules/avoid_barrel_cycle.dart';
 import 'package:barrel_file_lints/src/rules/avoid_core_importing_features.dart';
 import 'package:barrel_file_lints/src/rules/avoid_cross_feature_barrel_exports.dart';
+import 'package:barrel_file_lints/src/rules/avoid_flutter_in_domain.dart';
 import 'package:barrel_file_lints/src/rules/avoid_improper_layer_import.dart';
 import 'package:barrel_file_lints/src/rules/avoid_internal_feature_imports.dart';
 import 'package:barrel_file_lints/src/rules/avoid_self_barrel_import.dart';
@@ -25,6 +26,7 @@ export 'src/fixes/use_layer_specific_barrel.dart';
 export 'src/rules/avoid_barrel_cycle.dart';
 export 'src/rules/avoid_core_importing_features.dart';
 export 'src/rules/avoid_cross_feature_barrel_exports.dart';
+export 'src/rules/avoid_flutter_in_domain.dart';
 export 'src/rules/avoid_improper_layer_import.dart';
 export 'src/rules/avoid_internal_feature_imports.dart';
 export 'src/rules/avoid_self_barrel_import.dart';
@@ -44,6 +46,7 @@ class BarrelFileLintPlugin extends Plugin {
       ..registerLintRule(AvoidCrossFeatureBarrelExports())
       ..registerLintRule(AvoidBarrelCycle())
       ..registerLintRule(AvoidImproperLayerImport())
+      ..registerLintRule(AvoidFlutterInDomain())
       // Register quick fixes
       ..registerFixForRule(
         AvoidInternalFeatureImports.code,
