@@ -17,17 +17,17 @@ import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 /// (`package:meta/meta.dart`), internal feature imports, and external
 /// non-Flutter packages. Forbidden imports include `package:flutter/material.dart`,
 /// `package:flutter/widgets.dart`, and other Flutter framework packages.
-class AvoidFlutterInDomain extends AnalysisRule {
+class AvoidUiFrameworkInLogic extends AnalysisRule {
   /// Creates a rule instance with default configuration.
-  AvoidFlutterInDomain()
+  AvoidUiFrameworkInLogic()
     : super(
-        name: 'avoid_flutter_in_domain',
-        description: 'Domain and Data layers must not import Flutter framework',
+        name: 'avoid_ui_framework_in_logic',
+        description: 'Domain and Data layers must not import UI framework',
       );
 
-  /// Diagnostic code reported when domain/data layers import Flutter framework.
+  /// Diagnostic code reported when domain/data layers import UI framework.
   static const LintCode code = LintCode(
-    'avoid_flutter_in_domain',
+    'avoid_ui_framework_in_logic',
     "'{0}' layer cannot import '{1}'. Domain and Data layers must remain framework-independent.",
     correctionMessage:
         'Remove Flutter imports from domain/data layers. Use pure Dart types and domain interfaces instead. UI framework dependencies belong only in the presentation layer.',
@@ -78,14 +78,14 @@ class _FlutterImportVisitor extends SimpleAstVisitor<void> {
     rule.reportAtNode(node, arguments: [_layerName(currentLayer), uri]);
   }
 
-  /// Checks if URI is a Flutter framework import.
+  /// Checks if URI is a Flutter UI framework import.
   bool _isFlutterFrameworkImport(String uri) {
-    // Flutter framework packages that should not be in domain/data
-    final flutterPackages = [
+    // Flutter UI framework packages that should not be in domain/data
+    // Note: foundation.dart is allowed (contains kDebugMode, compute, etc.)
+    final flutterUiPackages = [
       'package:flutter/material.dart',
       'package:flutter/widgets.dart',
       'package:flutter/cupertino.dart',
-      'package:flutter/foundation.dart',
       'package:flutter/rendering.dart',
       'package:flutter/gestures.dart',
       'package:flutter/painting.dart',
@@ -96,9 +96,12 @@ class _FlutterImportVisitor extends SimpleAstVisitor<void> {
     ];
 
     // Check exact matches first
-    if (flutterPackages.contains(uri)) return true;
+    if (flutterUiPackages.contains(uri)) return true;
 
-    // Check if it starts with package:flutter/ (catch-all)
+    // Allow foundation.dart (platform-agnostic utilities)
+    if (uri == 'package:flutter/foundation.dart') return false;
+
+    // Check if it starts with package:flutter/ (catch-all for other UI packages)
     // But allow flutter_test in test files (checked separately)
     if (uri.startsWith('package:flutter/') &&
         !uri.startsWith('package:flutter_test/')) {

@@ -11,7 +11,7 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 ### New Features
 
 - **feat(rules)**: add `avoid_relative_barrel_imports` rule to encourage package imports over relative imports for cross-feature barrel files
-- **feat(rules)**: add `avoid_flutter_in_domain` rule to enforce framework independence in domain/data layers
+- **feat(rules)**: add `avoid_ui_framework_in_logic` rule to enforce framework independence in domain/data layers
 - **feat(rules)**: add `avoid_improper_layer_import` rule to enforce clean architecture layer boundaries (UI → Data → Domain)
 - **feat(quickfix)**: add `ConvertToPackageImport` quick fix to automatically convert relative barrel imports to package imports
 - **feat(quickfix)**: add `UseLayerSpecificBarrel` quick fix to suggest layer-specific barrel imports (e.g., `xxx_data.dart` instead of `xxx.dart`)

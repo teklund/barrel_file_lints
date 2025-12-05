@@ -125,7 +125,7 @@ class ProfileRepository {
 ```dart
 // lib/feature_auth/domain/use_cases/login_use_case.dart
 
-// ❌ This will trigger avoid_flutter_in_domain
+// ❌ This will trigger avoid_ui_framework_in_logic
 import 'package:flutter/material.dart';
 
 class LoginUseCase {

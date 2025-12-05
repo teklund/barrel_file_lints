@@ -1,4 +1,4 @@
-/// Tests for avoid_flutter_in_domain rule
+/// Tests for avoid_ui_framework_in_logic rule
 ///
 /// Test organization:
 /// - Domain layer violations: Flutter imports not allowed
@@ -17,15 +17,15 @@ import 'package:test_reflective_loader/test_reflective_loader.dart';
 
 void main() {
   defineReflectiveSuite(() {
-    defineReflectiveTests(AvoidFlutterInDomainTest);
+    defineReflectiveTests(AvoidUiFrameworkInLogicTest);
   });
 }
 
 @reflectiveTest
-class AvoidFlutterInDomainTest extends AnalysisRuleTest {
+class AvoidUiFrameworkInLogicTest extends AnalysisRuleTest {
   @override
   void setUp() {
-    rule = AvoidFlutterInDomain();
+    rule = AvoidUiFrameworkInLogic();
     super.setUp();
   }
 
@@ -90,22 +90,25 @@ class SettingsEntity {}
     );
   }
 
-  Future<void> test_domainLayer_importsFoundation_violation() async {
+  Future<void> test_domainLayer_importsFoundation_allowed() async {
     newFile('$testPackageRootPath/lib/feature_auth/auth.dart', '');
 
     newFile(
       '$testPackageRootPath/lib/feature_auth/domain/repositories/auth_repository.dart',
       '''
-// ignore: uri_does_not_exist
+// ignore: unused_import, uri_does_not_exist
 import 'package:flutter/foundation.dart';
 
-class AuthRepository {}
+class AuthRepository {
+  void log() {
+    print('Logging');
+  }
+}
 ''',
     );
 
-    await assertDiagnosticsInFile(
+    await assertNoDiagnosticsInFile(
       '$testPackageRootPath/lib/feature_auth/domain/repositories/auth_repository.dart',
-      [lint(30, 41)],
     );
   }
 
@@ -174,22 +177,25 @@ class LoginUseCase {}
     );
   }
 
-  Future<void> test_dataLayerCleanArch_importsFoundation_violation() async {
+  Future<void> test_dataLayerCleanArch_importsFoundation_allowed() async {
     newFile('$testPackageRootPath/lib/features/network/network.dart', '');
 
     newFile(
       '$testPackageRootPath/lib/features/network/infrastructure/data_sources/api.dart',
       '''
-// ignore: uri_does_not_exist
+// ignore: unused_import, uri_does_not_exist
 import 'package:flutter/foundation.dart';
 
-class NetworkDataSource {}
+class NetworkDataSource {
+  Future<void> fetchData() async {
+    // Can use kDebugMode, compute, etc. from foundation.dart
+  }
+}
 ''',
     );
 
-    await assertDiagnosticsInFile(
+    await assertNoDiagnosticsInFile(
       '$testPackageRootPath/lib/features/network/infrastructure/data_sources/api.dart',
-      [lint(30, 41)],
     );
   }
 
@@ -420,6 +426,7 @@ class LoginUseCase {}
 import 'package:flutter/material.dart';
 // ignore: uri_does_not_exist
 import 'package:flutter/services.dart';
+// foundation.dart is allowed
 // ignore: uri_does_not_exist
 import 'package:flutter/foundation.dart';
 
@@ -429,7 +436,10 @@ class ApiClient {}
 
     await assertDiagnosticsInFile(
       '$testPackageRootPath/lib/feature_network/data/clients/api.dart',
-      [lint(30, 39), lint(100, 39), lint(170, 41)],
+      [
+        lint(30, 39),
+        lint(100, 39),
+      ], // Only material and services, not foundation
     );
   }
 }

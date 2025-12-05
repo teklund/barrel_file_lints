@@ -144,9 +144,9 @@ plugins:
       # Warns when data/domain layers import barrels with UI exports
       avoid_improper_layer_import: true
       
-      # Prevent Flutter framework imports in domain/data layers
+      # Prevent UI framework imports in domain/data layers
       # Enforces framework-agnostic business logic
-      avoid_flutter_in_domain: true
+      avoid_ui_framework_in_logic: true
       
       # Discourage relative imports for cross-feature barrel files
       # Encourages package imports for better clarity and refactoring safety
@@ -309,9 +309,9 @@ import 'package:myapp/feature_b/b_data.dart';
 
 **Quick Fix:** When available, suggests using layer-specific barrel imports (e.g., `xxx_data.dart` instead of `xxx.dart`). Note: This quick fix is only available when layer-specific barrels exist in the imported feature.
 
-### `avoid_flutter_in_domain`
+### `avoid_ui_framework_in_logic`
 
-Enforces framework independence in Domain and Data layers by preventing Flutter framework imports. Domain layer should contain pure business logic without UI dependencies. Data layer should implement domain interfaces without UI framework coupling.
+Enforces framework independence in Domain and Data layers by preventing UI framework imports (Flutter, etc.). Domain layer should contain pure business logic without UI dependencies. Data layer should implement domain interfaces without UI framework coupling.
 
 ```dart
 // In lib/feature_auth/domain/use_cases/login.dart
@@ -338,8 +338,10 @@ import 'package:http/http.dart';
 // ✅ Correct - Domain interfaces
 import '../../domain/repositories/auth_repository.dart';
 
-// ❌ Wrong - Flutter framework in data layer
-import 'package:flutter/foundation.dart';  // Use dart:io for platform detection
+// ✅ Correct - foundation.dart is allowed (kDebugMode, compute, etc.)
+import 'package:flutter/foundation.dart';
+
+// ❌ Wrong - UI framework in data layer
 import 'package:flutter/services.dart';
 ```
 
@@ -358,6 +360,7 @@ import '../../domain/use_cases/login.dart';
 
 - `dart:*` (all Dart core libraries)
 - `package:meta/meta.dart` (annotations like `@immutable`)
+- `package:flutter/foundation.dart` (platform-agnostic utilities: `kDebugMode`, `compute()`, etc.)
 - Internal feature imports and barrel files
 - External non-Flutter packages (e.g., `package:http`, `package:dio`)
 - Test files can import `package:flutter_test/flutter_test.dart`
@@ -367,8 +370,9 @@ import '../../domain/use_cases/login.dart';
 - `package:flutter/material.dart`
 - `package:flutter/widgets.dart`
 - `package:flutter/cupertino.dart`
-- `package:flutter/foundation.dart`
-- Any other `package:flutter/*` (except `flutter_test` in test files)
+- `package:flutter/services.dart`
+- `package:flutter/rendering.dart`
+- Any other `package:flutter/*` UI packages (except `foundation.dart` and `flutter_test` in test files)
 
 **Rationale:** Following Clean Architecture principles, the domain layer represents pure business logic that should be framework-agnostic. This enables:
 

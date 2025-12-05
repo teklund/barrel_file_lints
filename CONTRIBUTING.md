@@ -182,7 +182,7 @@ barrel_file_lints/
 │       ├── rules/                   # Lint rules
 │       │   ├── avoid_core_importing_features.dart
 │       │   ├── avoid_cross_feature_barrel_exports.dart
-│       │   ├── avoid_flutter_in_domain.dart
+│       │   ├── avoid_ui_framework_in_logic.dart
 │       │   ├── avoid_improper_layer_import.dart
 │       │   ├── avoid_internal_feature_imports.dart
 │       │   └── avoid_self_barrel_import.dart
@@ -201,7 +201,7 @@ barrel_file_lints/
 ├── test/
 │   ├── avoid_core_importing_features_test.dart
 │   ├── avoid_cross_feature_barrel_exports_test.dart
-│   ├── avoid_flutter_in_domain_test.dart
+│   ├── avoid_ui_framework_in_logic_test.dart
 │   ├── avoid_internal_feature_imports_test.dart
 │   ├── additional_internal_directories_test.dart
 │   ├── cli_check_cycles_test.dart
