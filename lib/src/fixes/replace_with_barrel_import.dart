@@ -1,18 +1,16 @@
-/// Quick fix: Replace internal feature import with barrel file import
-library;
-
 import 'package:analysis_server_plugin/edit/dart/correction_producer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer_plugin/utilities/change_builder/change_builder_core.dart';
 import 'package:analyzer_plugin/utilities/fixes/fixes.dart';
 import 'package:analyzer_plugin/utilities/range_factory.dart';
 
-/// Quick fix: Replace internal feature import with barrel file import
+/// Replaces internal feature imports with barrel file imports.
 ///
-/// Changes: import 'package:myapp/feature_auth/data/auth_service.dart';
-/// To:      import 'package:myapp/feature_auth/auth.dart';
+/// Maintains feature encapsulation by using public barrel APIs. For example,
+/// converts `import 'package:myapp/feature_auth/data/auth_service.dart';` to
+/// `import 'package:myapp/feature_auth/auth.dart';`.
 class ReplaceWithBarrelImport extends ResolvedCorrectionProducer {
-  /// Creates a quick fix for replacing internal imports with barrel imports.
+  /// Creates a fix instance for the current resolution context.
   ReplaceWithBarrelImport({required super.context});
 
   static const _fixKind = FixKind(
@@ -47,7 +45,8 @@ class ReplaceWithBarrelImport extends ResolvedCorrectionProducer {
     });
   }
 
-  /// Build barrel file URI from internal import
+  /// Builds barrel file URI from internal import.
+  ///
   /// Supports both patterns and both absolute/relative imports:
   /// - 'package:myapp/feature_auth/data/auth_service.dart'
   ///    -> 'package:myapp/feature_auth/auth.dart'

@@ -1,27 +1,23 @@
-/// Lint rule: Features must import other features via barrel files only
-library;
-
 import 'package:analyzer/analysis_rule/analysis_rule.dart';
 import 'package:analyzer/analysis_rule/rule_context.dart';
 import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/error/error.dart';
-
 import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 
-/// Lint rule: Features must import other features via barrel files only
+/// Enforces barrel file imports between features.
 ///
-/// Supports both naming conventions:
-/// - feature_xxx/ (underscore style)
-/// - features/xxx/ (clean architecture style)
+/// Prevents direct imports into a feature's internal implementation and
+/// maintains feature encapsulation by requiring barrel file imports.
+/// Supports both `feature_xxx/` (underscore) and `features/xxx/` (clean
+/// architecture) naming conventions.
 ///
-/// ✅ Correct: import 'package:myapp/feature_auth/auth.dart';
-/// ✅ Correct: import 'package:myapp/features/auth/auth.dart';
-/// ❌ Wrong: import 'package:myapp/feature_auth/data/auth_service.dart';
-/// ❌ Wrong: import 'package:myapp/features/auth/data/auth_service.dart';
+/// For example, instead of importing
+/// `package:myapp/feature_auth/data/auth_service.dart`, use the barrel file
+/// `package:myapp/feature_auth/auth.dart`.
 class AvoidInternalFeatureImports extends AnalysisRule {
-  /// Creates a new instance of [AvoidInternalFeatureImports]
+  /// Creates a rule instance with default configuration.
   AvoidInternalFeatureImports()
     : super(
         name: 'avoid_internal_feature_imports',
@@ -29,7 +25,7 @@ class AvoidInternalFeatureImports extends AnalysisRule {
             'Features must import other features via barrel files only',
       );
 
-  /// The lint code for this rule
+  /// Diagnostic code reported when importing internal feature files directly.
   static const LintCode code = LintCode(
     'avoid_internal_feature_imports',
     "Import '{0}' via its barrel file '{1}' instead of internal path.",
@@ -51,13 +47,9 @@ class AvoidInternalFeatureImports extends AnalysisRule {
 
 /// Visitor that detects internal feature imports.
 class _InternalImportVisitor extends SimpleAstVisitor<void> {
-  /// Creates a visitor for detecting internal imports.
   _InternalImportVisitor(this.rule, this.context);
 
-  /// The rule that created this visitor.
   final AnalysisRule rule;
-
-  /// The context for the current analysis.
   final RuleContext context;
 
   @override
@@ -93,30 +85,18 @@ class _InternalImportVisitor extends SimpleAstVisitor<void> {
       if (isInternalImport(uri)) {
         // Determine the layer to suggest appropriate barrel
         final importLayer = getLayerFromPath(uri);
-        final barrelSuffix = _getBarrelSuffix(importLayer);
+        final barrelFileName = getBarrelFileName(
+          importedFeature.featureName,
+          importLayer,
+        );
 
-        final barrelFile =
-            '${importedFeature.featureDir}/${importedFeature.featureName}$barrelSuffix.dart';
+        final barrelFile = '${importedFeature.featureDir}/$barrelFileName';
 
         rule.reportAtNode(
           node,
           arguments: [importedFeature.featureDir, barrelFile],
         );
       }
-    }
-  }
-
-  /// Get the barrel suffix based on the layer
-  String _getBarrelSuffix(ArchLayer layer) {
-    switch (layer) {
-      case ArchLayer.data:
-        return '_data';
-      case ArchLayer.domain:
-        return '_domain';
-      case ArchLayer.ui:
-        return '_ui';
-      case ArchLayer.unknown:
-        return ''; // Default to monolithic barrel
     }
   }
 }

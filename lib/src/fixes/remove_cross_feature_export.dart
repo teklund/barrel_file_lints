@@ -1,18 +1,15 @@
-/// Quick fix: Remove cross-feature export from barrel file
-library;
-
 import 'package:analysis_server_plugin/edit/dart/correction_producer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer_plugin/utilities/change_builder/change_builder_core.dart';
 import 'package:analyzer_plugin/utilities/fixes/fixes.dart';
 import 'package:analyzer_plugin/utilities/range_factory.dart';
 
-/// A correction processor that removes cross-feature exports from barrel files.
+/// Removes cross-feature exports from barrel files.
 ///
-/// This fix handles the `avoid_cross_feature_barrel_exports` lint by removing
-/// export directives that reference files outside the barrel's own feature.
+/// Deletes export directives that reference files outside the barrel's own
+/// feature, maintaining proper feature boundaries.
 class RemoveCrossFeatureExport extends ResolvedCorrectionProducer {
-  /// Creates a new instance of [RemoveCrossFeatureExport]
+  /// Creates a fix instance for the current resolution context.
   RemoveCrossFeatureExport({required super.context});
 
   static const _fixKind = FixKind(

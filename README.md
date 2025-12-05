@@ -151,6 +151,10 @@ plugins:
       # Prevent Flutter framework imports in domain/data layers
       # Enforces framework-agnostic business logic
       avoid_flutter_in_domain: true
+      
+      # Discourage relative imports for cross-feature barrel files
+      # Encourages package imports for better clarity and refactoring safety
+      avoid_relative_barrel_imports: true
 ```
 
 **Note:** Rules are disabled by default. Explicitly enable the rules that match your architecture needs.
@@ -172,6 +176,22 @@ import 'package:myapp/feature_auth/data/auth_service.dart';
 ```
 
 **Quick Fix:** Automatically replaces internal imports with barrel file imports.
+
+### `avoid_relative_barrel_imports`
+
+Cross-feature barrel imports should use package imports instead of relative imports. This improves code clarity, refactoring safety, and IDE support.
+
+```dart
+// ✅ Correct - package import
+import 'package:myapp/feature_tickets/tickets.dart';
+
+// ⚠️  Discouraged - relative import to cross-feature barrel
+import '../../feature_tickets/tickets.dart';
+```
+
+**Note:** Relative imports within the same feature are still allowed. This rule only flags relative imports to other features' barrel files.
+
+**Quick Fix:** Automatically converts relative barrel imports to package imports.
 
 ### `avoid_core_importing_features`
 
@@ -282,16 +302,22 @@ import 'package:myapp/feature_d/d_ui.dart';
 
 #### With Monolithic Barrels
 
-Analyzes barrel file contents to detect layer violations:
+When data or domain layers import monolithic barrels, the rule warns and suggests using split barrels instead:
 
 ```dart
-// lib/feature_b/b.dart exports:
-// - data/repository.dart
-// - ui/screen.dart  ← Contains UI exports
+// lib/feature_b/b.dart (monolithic barrel)
+export 'data/repository.dart';
+export 'ui/screen.dart';
 
 // In lib/feature_a/data/repository.dart
-import 'package:myapp/feature_b/b.dart';  // ⚠️ Warning: barrel exports UI layer
+// ❌ Warning: Data layer should use split barrel instead
+import 'package:myapp/feature_b/b.dart';
+
+// ✅ Correct: Use layer-specific barrel
+import 'package:myapp/feature_b/b_data.dart';
 ```
+
+**Note:** UI layer can import monolithic barrels without warnings since it has no import restrictions.
 
 #### Layer Rules (Clean Architecture)
 

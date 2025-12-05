@@ -1,6 +1,3 @@
-/// Lint rule: Enforce clean architecture layer boundaries for barrel imports
-library;
-
 import 'package:analyzer/analysis_rule/analysis_rule.dart';
 import 'package:analyzer/analysis_rule/rule_context.dart';
 import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
@@ -9,38 +6,22 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/error/error.dart';
 import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 
-/// Lint rule: Enforce clean architecture layer boundaries for barrel imports
+/// Enforces Clean Architecture layer boundaries.
 ///
-/// Prevents layer violations by detecting when:
-/// - Domain layer imports barrels that export Data or UI layer (Domain is innermost)
-/// - Data layer imports barrels that export UI layer
+/// Prevents layer violations by detecting when domain layer imports barrels
+/// that export data or UI layer, or when data layer imports barrels that
+/// export UI layer. The dependency direction must be: UI → Data → Domain.
 ///
-/// Supports both monolithic and split barrel files:
-/// - Monolithic: feature_xxx/xxx.dart (analyzes exports to detect layers)
-/// - Split: feature_xxx/xxx_data.dart, xxx_domain.dart, xxx_ui.dart
+/// Supports both monolithic barrels (analyzes exports to detect layers) and
+/// split barrels with layer-specific files like `xxx_data.dart`,
+/// `xxx_domain.dart`, and `xxx_ui.dart`.
 ///
-/// ✅ Correct:
-/// ```dart
-/// // In feature_a/data/repository_impl.dart
-/// import 'package:myapp/feature_b/b_domain.dart'; // Data can import Domain
-/// import 'package:myapp/feature_c/c_data.dart';   // Data can import Data
-///
-/// // In feature_a/presentation/screen.dart
-/// import 'package:myapp/feature_b/b_domain.dart'; // UI can import anything
-/// import 'package:myapp/feature_c/c_data.dart';
-/// ```
-///
-/// ❌ Wrong:
-/// ```dart
-/// // In feature_a/domain/use_case.dart
-/// import 'package:myapp/feature_b/b_data.dart';   // Domain CANNOT import Data
-/// import 'package:myapp/feature_c/c_ui.dart';     // Domain CANNOT import UI
-///
-/// // In feature_a/data/repository_impl.dart
-/// import 'package:myapp/feature_b/b_ui.dart';     // Data CANNOT import UI
-/// ```
+/// For example, in `feature_a/data/repository_impl.dart`, importing
+/// `package:myapp/feature_b/b_domain.dart` is allowed (data can import domain),
+/// but importing `package:myapp/feature_b/b_ui.dart` is not allowed (data
+/// cannot import UI).
 class AvoidImproperLayerImport extends AnalysisRule {
-  /// Creates a new instance of [AvoidImproperLayerImport]
+  /// Creates a rule instance with default configuration.
   AvoidImproperLayerImport()
     : super(
         name: 'avoid_improper_layer_import',
@@ -48,12 +29,12 @@ class AvoidImproperLayerImport extends AnalysisRule {
             'Enforce clean architecture layer boundaries for barrel imports',
       );
 
-  /// The lint code for this rule
+  /// Diagnostic code reported when a layer import violates architecture boundaries.
   static const LintCode code = LintCode(
     'avoid_improper_layer_import',
-    "Layer violation: {0} layer cannot import barrel '{1}' which exports {2} layer.",
+    "Layer violation: {0} layer should not import '{1}'. Use '{2}' instead.",
     correctionMessage:
-        'Use a layer-specific barrel file (e.g., xxx_data.dart) or ensure the barrel only exports appropriate layers.',
+        'Use layer-specific barrel files to maintain proper architectural boundaries.',
   );
 
   @override
@@ -64,19 +45,18 @@ class AvoidImproperLayerImport extends AnalysisRule {
     RuleVisitorRegistry registry,
     RuleContext context,
   ) {
-    registry.addImportDirective(this, _LayerImportVisitor(this, context));
+    registry.addImportDirective(
+      this,
+      _ImproperLayerImportVisitor(this, context),
+    );
   }
 }
 
 /// Visitor that detects improper layer imports.
-class _LayerImportVisitor extends SimpleAstVisitor<void> {
-  /// Creates a visitor for detecting layer violations.
-  _LayerImportVisitor(this.rule, this.context);
+class _ImproperLayerImportVisitor extends SimpleAstVisitor<void> {
+  _ImproperLayerImportVisitor(this.rule, this.context);
 
-  /// The rule that created this visitor.
   final AnalysisRule rule;
-
-  /// The context for the current analysis.
   final RuleContext context;
 
   @override
@@ -134,9 +114,12 @@ class _LayerImportVisitor extends SimpleAstVisitor<void> {
         }
         return;
       case BarrelType.monolithic:
-        // Monolithic barrels are not analyzed for layer violations
-        // due to complexity of file system access in analysis rules.
-        // Recommend using split barrels for strict layer enforcement.
+        // For monolithic barrels, warn data/domain layers to use split barrels
+        // Data layer should use xxx_data.dart, domain should use xxx_domain.dart
+        if (currentLayer == ArchLayer.data ||
+            currentLayer == ArchLayer.domain) {
+          _reportMonolithicBarrelUsage(node, currentLayer, importedFeature);
+        }
         return;
       case BarrelType.notBarrel:
         // Not a barrel import, skip
@@ -144,20 +127,43 @@ class _LayerImportVisitor extends SimpleAstVisitor<void> {
     }
   }
 
-  /// Report a layer violation
+  /// Reports a layer violation.
   void _reportViolation(
     ImportDirective node,
     ArchLayer currentLayer,
     String uri,
     ArchLayer violatingLayer,
   ) {
+    // For split barrel violations, suggest using appropriate layer barrel
+    // This shouldn't normally happen since split barrels are explicit
     rule.reportAtNode(
       node,
-      arguments: [_layerName(currentLayer), uri, _layerName(violatingLayer)],
+      arguments: [_layerName(currentLayer), uri, 'a layer-appropriate barrel'],
     );
   }
 
-  /// Get a human-readable layer name
+  /// Reports monolithic barrel usage from data/domain layers.
+  void _reportMonolithicBarrelUsage(
+    ImportDirective node,
+    ArchLayer currentLayer,
+    FeatureMatch importedFeature,
+  ) {
+    final suggestedBarrel = getBarrelFileName(
+      importedFeature.featureName,
+      currentLayer,
+    );
+
+    rule.reportAtNode(
+      node,
+      arguments: [
+        _layerName(currentLayer),
+        '${importedFeature.featureDir}/${importedFeature.featureName}.dart',
+        '${importedFeature.featureDir}/$suggestedBarrel',
+      ],
+    );
+  }
+
+  /// Gets a human-readable layer name.
   String _layerName(ArchLayer layer) {
     switch (layer) {
       case ArchLayer.data:

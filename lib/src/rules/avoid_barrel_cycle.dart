@@ -1,6 +1,3 @@
-/// Lint rule: Barrel files should not create immediate circular dependencies
-library;
-
 import 'dart:io';
 
 import 'package:analyzer/analysis_rule/analysis_rule.dart';
@@ -12,19 +9,17 @@ import 'package:analyzer/error/error.dart';
 import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 import 'package:path/path.dart' as path;
 
-/// Lint rule: Barrel files should not create immediate circular dependencies
+/// Detects immediate circular dependencies between barrel files.
 ///
-/// This rule detects direct back-and-forth cycles between barrel files:
-/// - feature_a/a.dart exports feature_b/b.dart
-/// - feature_b/b.dart exports feature_a/a.dart
-///
-/// ✅ Correct: One-way dependencies between barrels
-/// ❌ Wrong: Mutual exports between barrels (creates circular dependency)
+/// This rule detects direct back-and-forth cycles between barrel files where
+/// feature_a/a.dart exports feature_b/b.dart and feature_b/b.dart exports
+/// feature_a/a.dart. Mutual exports create circular dependencies that should
+/// be avoided.
 ///
 /// Note: This only detects immediate (2-node) cycles. For transitive cycles
 /// (A → B → C → A), use the CLI tool: `dart run barrel_file_lints:check_cycles`
 class AvoidBarrelCycle extends AnalysisRule {
-  /// Creates a new instance of [AvoidBarrelCycle]
+  /// Creates a rule instance with default configuration.
   AvoidBarrelCycle()
     : super(
         name: 'avoid_barrel_cycle',
@@ -32,7 +27,7 @@ class AvoidBarrelCycle extends AnalysisRule {
             'Barrel files should not create immediate circular dependencies',
       );
 
-  /// The lint code for this rule
+  /// Diagnostic code reported when barrel files have circular dependencies.
   static const LintCode code = LintCode(
     'avoid_barrel_cycle',
     "Barrel file has circular dependency with '{0}'. Both barrels export each other, creating a dependency cycle.",
@@ -54,13 +49,9 @@ class AvoidBarrelCycle extends AnalysisRule {
 
 /// Visitor that detects immediate barrel-to-barrel cycles.
 class _BarrelCycleVisitor extends SimpleAstVisitor<void> {
-  /// Creates a visitor for detecting barrel cycles.
   _BarrelCycleVisitor(this.rule, this.context);
 
-  /// The rule that created this visitor.
   final AnalysisRule rule;
-
-  /// The context for the current analysis.
   final RuleContext context;
 
   @override
@@ -148,7 +139,7 @@ class _BarrelCycleVisitor extends SimpleAstVisitor<void> {
     }
   }
 
-  /// Check if the target barrel file exports back to the current feature
+  /// Checks if the target barrel file exports back to the current feature.
   bool _hasReverseExport(String targetBarrelPath, FeatureMatch currentFeature) {
     try {
       final file = File(targetBarrelPath);

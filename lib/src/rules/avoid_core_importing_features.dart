@@ -1,28 +1,26 @@
-/// Lint rule: Core module must not import from features
-library;
-
 import 'package:analyzer/analysis_rule/analysis_rule.dart';
 import 'package:analyzer/analysis_rule/rule_context.dart';
 import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/error/error.dart';
-
 import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 
-/// Lint rule: Core module must not import from features
+/// Prevents core from importing feature modules.
 ///
-/// ✅ Correct: Core can import from common/ or external packages
-/// ❌ Wrong: import 'package:myapp/feature_auth/auth.dart';
+/// Core modules must remain independent of features. They can import from
+/// common directories or external packages, but importing from feature
+/// modules creates unwanted dependencies that violate architectural
+/// boundaries.
 class AvoidCoreImportingFeatures extends AnalysisRule {
-  /// Creates a new instance of [AvoidCoreImportingFeatures]
+  /// Creates a rule instance with default configuration.
   AvoidCoreImportingFeatures()
     : super(
         name: 'avoid_core_importing_features',
         description: 'Core module must not import from feature modules',
       );
 
-  /// The lint code for this rule
+  /// Diagnostic code reported when core module imports from features.
   static const LintCode code = LintCode(
     'avoid_core_importing_features',
     "Core module cannot import from '{0}'. Core must remain independent of features.",
@@ -44,13 +42,9 @@ class AvoidCoreImportingFeatures extends AnalysisRule {
 
 /// Visitor that detects feature imports from core modules.
 class _CoreImportVisitor extends SimpleAstVisitor<void> {
-  /// Creates a visitor for detecting core-to-feature imports.
   _CoreImportVisitor(this.rule, this.context);
 
-  /// The rule that created this visitor.
   final AnalysisRule rule;
-
-  /// The context for the current analysis.
   final RuleContext context;
 
   @override

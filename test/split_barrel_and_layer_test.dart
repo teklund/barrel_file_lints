@@ -378,11 +378,9 @@ class Helper {}
     );
   }
 
-  // NOTE: Monolithic barrel layer analysis is not currently implemented.
-  // The rule only enforces layer boundaries for split barrels (xxx_data.dart, etc).
-  // For strict layer enforcement, teams should use split barrels.
-  Future<void> test_monolithicBarrel_notAnalyzed() async {
-    // Monolithic barrels are not checked for layer violations
+  Future<void> test_monolithicBarrel_dataLayer_violation() async {
+    // Data layer importing monolithic barrel should be flagged
+    // to encourage using split barrels instead
     newFile('$testPackageRootPath/lib/feature_b/b.dart', '''
 export 'data/repository.dart';
 export 'ui/screen.dart';
@@ -395,9 +393,51 @@ import 'package:test/feature_b/b.dart';
 class ARepository {}
 ''');
 
-    // No diagnostic expected - monolithic barrels are not analyzed
-    await assertNoDiagnosticsInFile(
+    // Should suggest using b_data.dart instead
+    await assertDiagnosticsInFile(
       '$testPackageRootPath/lib/feature_a/data/repository.dart',
+      [lint(25, 39)],
+    );
+  }
+
+  Future<void> test_monolithicBarrel_domainLayer_violation() async {
+    // Domain layer importing monolithic barrel should be flagged
+    newFile('$testPackageRootPath/lib/feature_b/b.dart', '''
+export 'domain/entity.dart';
+export 'ui/screen.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/feature_a/domain/use_case.dart', '''
+// ignore: unused_import
+import 'package:test/feature_b/b.dart';
+
+class AUseCase {}
+''');
+
+    // Should suggest using b_domain.dart instead
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_a/domain/use_case.dart',
+      [lint(25, 39)],
+    );
+  }
+
+  Future<void> test_monolithicBarrel_uiLayer_allowed() async {
+    // UI layer can import monolithic barrels
+    newFile('$testPackageRootPath/lib/feature_b/b.dart', '''
+export 'data/repository.dart';
+export 'ui/screen.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/feature_a/ui/screen.dart', '''
+// ignore: unused_import
+import 'package:test/feature_b/b.dart';
+
+class AScreen {}
+''');
+
+    // UI layer can import anything - no diagnostic
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_a/ui/screen.dart',
     );
   }
 }

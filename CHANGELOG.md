@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 This project follows [Conventional Commits](https://www.conventionalcommits.org/) and adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- **feat(rules)**: add `avoid_relative_barrel_imports` rule to discourage relative imports for cross-feature barrel files
+- **feat(quickfix)**: add `ConvertToPackageImport` quick fix to automatically convert relative barrel imports to package imports
+- **feat(rules)**: enhance `avoid_improper_layer_import` to flag monolithic barrel usage in data/domain layers, suggesting split barrels instead
+- **fix(rules)**: enhance `avoid_self_barrel_import` to detect split barrel self-imports (xxx_data.dart, xxx_domain.dart, xxx_ui.dart) and only flag when a layer imports its own split barrel (e.g., data/ importing auth_data.dart), allowing cross-layer imports within same feature
+- **test**: add 12 comprehensive tests for `avoid_relative_barrel_imports` covering both naming conventions and edge cases
+- **test**: add 3 tests for monolithic barrel detection in data/domain/ui layers
+- **test**: add 19 tests for split barrel self-import detection covering:
+  - All three layers (data, domain, ui) with both naming conventions (`feature_xxx/` and `features/xxx/`)
+  - Both package and relative imports for violations
+  - Allowed cross-layer imports (data→domain, ui→domain, ui→data) with both import styles
+  - Domain layer correctly blocked from importing ui/data barrels (verified by `avoid_improper_layer_import` rule)
+
 ## [1.0.5] - 2025-12-05
 
 - **feat(rules)**: add `avoid_flutter_in_domain` rule to enforce framework independence in domain/data layers by preventing Flutter imports

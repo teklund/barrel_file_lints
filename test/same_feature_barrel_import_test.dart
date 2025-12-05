@@ -335,4 +335,383 @@ class ProfileWidget {}
       '$testPackageRootPath/lib/feature_profile/ui/parts/profile_widget.dart',
     );
   }
+
+  // Tests for split barrel self-imports
+  Future<void> test_dataLayerImportsOwnDataBarrel_violation() async {
+    newFile('$testPackageRootPath/lib/feature_auth/auth_data.dart', '''
+export 'data/auth_repository.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/feature_auth/data/auth_service.dart', '''
+// ignore: unused_import
+import 'package:test/feature_auth/auth_data.dart';
+
+class AuthService {}
+''');
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/data/auth_service.dart',
+      [lint(25, 50)],
+    );
+  }
+
+  Future<void> test_domainLayerImportsOwnDomainBarrel_violation() async {
+    newFile('$testPackageRootPath/lib/feature_auth/auth_domain.dart', '''
+export 'domain/auth_entity.dart';
+''');
+
+    newFile(
+      '$testPackageRootPath/lib/feature_auth/domain/auth_use_case.dart',
+      '''
+// ignore: unused_import
+import 'package:test/feature_auth/auth_domain.dart';
+
+class AuthUseCase {}
+''',
+    );
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/domain/auth_use_case.dart',
+      [lint(25, 52)],
+    );
+  }
+
+  Future<void> test_uiLayerImportsOwnUiBarrel_violation() async {
+    newFile('$testPackageRootPath/lib/feature_auth/auth_ui.dart', '''
+export 'ui/login_screen.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/feature_auth/ui/login_widget.dart', '''
+// ignore: unused_import
+import 'package:test/feature_auth/auth_ui.dart';
+
+class LoginWidget {}
+''');
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/ui/login_widget.dart',
+      [lint(25, 48)],
+    );
+  }
+
+  Future<void> test_relativeSplitBarrelImport_violation() async {
+    newFile('$testPackageRootPath/lib/feature_auth/auth_data.dart', '''
+export 'data/auth_repository.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/feature_auth/data/auth_service.dart', '''
+// ignore: unused_import
+import '../auth_data.dart';
+
+class AuthService {}
+''');
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/data/auth_service.dart',
+      [lint(25, 27)],
+    );
+  }
+
+  Future<void> test_dataLayerImportsOtherSplitBarrel_allowed() async {
+    // Data layer can import domain barrel from same feature
+    newFile('$testPackageRootPath/lib/feature_auth/auth_domain.dart', '''
+export 'domain/auth_entity.dart';
+''');
+
+    newFile(
+      '$testPackageRootPath/lib/feature_auth/data/auth_repository.dart',
+      '''
+// ignore: unused_import
+import 'package:test/feature_auth/auth_domain.dart';
+
+class AuthRepository {}
+''',
+    );
+
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/data/auth_repository.dart',
+    );
+  }
+
+  Future<void> test_uiLayerImportsDataBarrel_allowed() async {
+    // UI layer can import data barrel from same feature
+    newFile('$testPackageRootPath/lib/feature_auth/auth_data.dart', '''
+export 'data/auth_repository.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/feature_auth/ui/login_screen.dart', '''
+// ignore: unused_import
+import 'package:test/feature_auth/auth_data.dart';
+
+class LoginScreen {}
+''');
+
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/ui/login_screen.dart',
+    );
+  }
+
+  Future<void> test_slashStyle_splitBarrelSelfImport_violation() async {
+    newFile('$testPackageRootPath/lib/features/auth/auth_data.dart', '''
+export 'data/auth_repository.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/features/auth/data/auth_service.dart', '''
+// ignore: unused_import
+import 'package:test/features/auth/auth_data.dart';
+
+class AuthService {}
+''');
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/features/auth/data/auth_service.dart',
+      [lint(25, 51)],
+    );
+  }
+
+  Future<void> test_slashStyle_domainBarrelSelfImport_violation() async {
+    newFile('$testPackageRootPath/lib/features/auth/auth_domain.dart', '''
+export 'domain/auth_entity.dart';
+''');
+
+    newFile(
+      '$testPackageRootPath/lib/features/auth/domain/auth_use_case.dart',
+      '''
+// ignore: unused_import
+import 'package:test/features/auth/auth_domain.dart';
+
+class AuthUseCase {}
+''',
+    );
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/features/auth/domain/auth_use_case.dart',
+      [lint(25, 53)],
+    );
+  }
+
+  Future<void> test_slashStyle_uiBarrelSelfImport_violation() async {
+    newFile('$testPackageRootPath/lib/features/auth/auth_ui.dart', '''
+export 'ui/login_screen.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/features/auth/ui/login_widget.dart', '''
+// ignore: unused_import
+import 'package:test/features/auth/auth_ui.dart';
+
+class LoginWidget {}
+''');
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/features/auth/ui/login_widget.dart',
+      [lint(25, 49)],
+    );
+  }
+
+  Future<void> test_slashStyle_relativeSplitBarrel_violation() async {
+    newFile('$testPackageRootPath/lib/features/auth/auth_domain.dart', '''
+export 'domain/auth_entity.dart';
+''');
+
+    newFile(
+      '$testPackageRootPath/lib/features/auth/domain/auth_use_case.dart',
+      '''
+// ignore: unused_import
+import '../auth_domain.dart';
+
+class AuthUseCase {}
+''',
+    );
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/features/auth/domain/auth_use_case.dart',
+      [lint(25, 29)],
+    );
+  }
+
+  Future<void> test_uiImportsDomainBarrel_allowed() async {
+    // UI layer can import domain barrel from same feature
+    newFile('$testPackageRootPath/lib/feature_auth/auth_domain.dart', '''
+export 'domain/auth_entity.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/feature_auth/ui/login_screen.dart', '''
+// ignore: unused_import
+import 'package:test/feature_auth/auth_domain.dart';
+
+class LoginScreen {}
+''');
+
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/ui/login_screen.dart',
+    );
+  }
+
+  Future<void> test_dataImportsDomainBarrel_relative_allowed() async {
+    // Data layer can import domain barrel via relative import
+    newFile('$testPackageRootPath/lib/feature_auth/auth_domain.dart', '''
+export 'domain/auth_entity.dart';
+''');
+
+    newFile(
+      '$testPackageRootPath/lib/feature_auth/data/auth_repository.dart',
+      '''
+// ignore: unused_import
+import '../auth_domain.dart';
+
+class AuthRepository {}
+''',
+    );
+
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/data/auth_repository.dart',
+    );
+  }
+
+  Future<void> test_uiImportsDataBarrel_relative_allowed() async {
+    // UI layer can import data barrel via relative import
+    newFile('$testPackageRootPath/lib/feature_auth/auth_data.dart', '''
+export 'data/auth_repository.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/feature_auth/ui/login_screen.dart', '''
+// ignore: unused_import
+import '../auth_data.dart';
+
+class LoginScreen {}
+''');
+
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/ui/login_screen.dart',
+    );
+  }
+
+  Future<void> test_slashStyle_dataImportsDomain_allowed() async {
+    // Slash style: data can import domain barrel
+    newFile('$testPackageRootPath/lib/features/auth/auth_domain.dart', '''
+export 'domain/auth_entity.dart';
+''');
+
+    newFile(
+      '$testPackageRootPath/lib/features/auth/data/auth_repository.dart',
+      '''
+// ignore: unused_import
+import 'package:test/features/auth/auth_domain.dart';
+
+class AuthRepository {}
+''',
+    );
+
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/features/auth/data/auth_repository.dart',
+    );
+  }
+
+  Future<void> test_slashStyle_uiImportsData_allowed() async {
+    // Slash style: UI can import data barrel
+    newFile('$testPackageRootPath/lib/features/auth/auth_data.dart', '''
+export 'data/auth_repository.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/features/auth/ui/login_screen.dart', '''
+// ignore: unused_import
+import 'package:test/features/auth/auth_data.dart';
+
+class LoginScreen {}
+''');
+
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/features/auth/ui/login_screen.dart',
+    );
+  }
+
+  Future<void> test_relativeUiImportOwnUiBarrel_violation() async {
+    // Relative import: UI importing own UI barrel
+    newFile('$testPackageRootPath/lib/feature_auth/auth_ui.dart', '''
+export 'ui/login_screen.dart';
+''');
+
+    newFile('$testPackageRootPath/lib/feature_auth/ui/login_widget.dart', '''
+// ignore: unused_import
+import '../auth_ui.dart';
+
+class LoginWidget {}
+''');
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/ui/login_widget.dart',
+      [lint(25, 25)],
+    );
+  }
+
+  Future<void> test_relativeDomainImportOwnDomainBarrel_violation() async {
+    // Relative import: Domain importing own domain barrel
+    newFile('$testPackageRootPath/lib/feature_auth/auth_domain.dart', '''
+export 'domain/auth_entity.dart';
+''');
+
+    newFile(
+      '$testPackageRootPath/lib/feature_auth/domain/auth_use_case.dart',
+      '''
+// ignore: unused_import
+import '../auth_domain.dart';
+
+class AuthUseCase {}
+''',
+    );
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/domain/auth_use_case.dart',
+      [lint(25, 29)],
+    );
+  }
+
+  Future<void> test_domainImportsUiBarrel_shouldBeBlockedByLayerRule() async {
+    // Domain layer should NOT be able to import UI barrel - this should be caught
+    // by avoid_improper_layer_import rule, not this rule
+    // This test verifies avoid_self_barrel_import doesn't interfere
+    newFile('$testPackageRootPath/lib/feature_auth/auth_ui.dart', '''
+export 'ui/login_screen.dart';
+''');
+
+    newFile(
+      '$testPackageRootPath/lib/feature_auth/domain/auth_use_case.dart',
+      '''
+// ignore: unused_import
+import 'package:test/feature_auth/auth_ui.dart';
+
+class AuthUseCase {}
+''',
+    );
+
+    // This should NOT trigger avoid_self_barrel_import (different layers)
+    // It WILL trigger avoid_improper_layer_import
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/domain/auth_use_case.dart',
+    );
+  }
+
+  Future<void> test_domainImportsDataBarrel_shouldBeBlockedByLayerRule() async {
+    // Domain layer should NOT be able to import Data barrel - this should be caught
+    // by avoid_improper_layer_import rule, not this rule
+    newFile('$testPackageRootPath/lib/feature_auth/auth_data.dart', '''
+export 'data/auth_repository.dart';
+''');
+
+    newFile(
+      '$testPackageRootPath/lib/feature_auth/domain/auth_use_case.dart',
+      '''
+// ignore: unused_import
+import 'package:test/feature_auth/auth_data.dart';
+
+class AuthUseCase {}
+''',
+    );
+
+    // This should NOT trigger avoid_self_barrel_import (different layers)
+    // It WILL trigger avoid_improper_layer_import
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/domain/auth_use_case.dart',
+    );
+  }
 }

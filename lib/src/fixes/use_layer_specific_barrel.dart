@@ -1,27 +1,18 @@
-/// Quick fix: Replace monolithic barrel import with layer-specific barrel
-library;
-
 import 'package:analysis_server_plugin/edit/dart/correction_producer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer_plugin/utilities/change_builder/change_builder_core.dart';
 import 'package:analyzer_plugin/utilities/fixes/fixes.dart';
 import 'package:analyzer_plugin/utilities/range_factory.dart';
-
 import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 
-/// Quick fix: Replace monolithic barrel import with layer-specific barrel
+/// Replaces monolithic barrel imports with layer-specific barrels.
 ///
-/// Replaces imports like:
-/// ```dart
-/// import 'package:myapp/feature_b/b.dart';
-/// ```
-///
-/// With layer-specific imports:
-/// ```dart
-/// import 'package:myapp/feature_b/b_data.dart';
-/// ```
+/// Enforces proper layer boundaries by using appropriate split barrel files
+/// based on the importing file's architectural layer. For example, a file in
+/// the data layer importing from another feature will use the `_data.dart`
+/// barrel instead of the monolithic barrel.
 class UseLayerSpecificBarrel extends ResolvedCorrectionProducer {
-  /// Creates a quick fix for using layer-specific barrel imports.
+  /// Creates a fix instance for the current resolution context.
   UseLayerSpecificBarrel({required super.context});
 
   static const _fixKind = FixKind(
@@ -53,27 +44,21 @@ class UseLayerSpecificBarrel extends ResolvedCorrectionProducer {
     final currentPath = unitResult.uri.toString();
     final currentLayer = getLayerFromPath(currentPath);
 
-    // Determine the appropriate layer suffix
-    String layerSuffix;
-    switch (currentLayer) {
-      case ArchLayer.data:
-        layerSuffix = '_data';
-        break;
-      case ArchLayer.domain:
-        layerSuffix = '_domain';
-        break;
-      case ArchLayer.ui:
-        layerSuffix = '_ui';
-        break;
-      case ArchLayer.unknown:
-        // Can't determine layer, skip
-        return;
+    // Can't determine layer, skip
+    if (currentLayer == ArchLayer.unknown) {
+      return;
     }
 
-    // Build the new import URI with layer suffix
+    // Get the appropriate barrel filename for this layer
+    final barrelFileName = getBarrelFileName(
+      importedFeature.featureName,
+      currentLayer,
+    );
+
+    // Build the new import URI with layer-specific barrel
     final newUri = uri.replaceAll(
       '/${importedFeature.featureName}.dart',
-      '/${importedFeature.featureName}$layerSuffix.dart',
+      '/$barrelFileName',
     );
 
     // Replace the import URI
