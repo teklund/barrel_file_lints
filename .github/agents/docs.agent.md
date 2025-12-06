@@ -71,8 +71,8 @@ dart run pana
 
 Before completing documentation work:
 
-1. **Check code examples** - Use `#tool:search` to find real patterns from `lib/src/rules/` and `lib/src/fixes/`
-2. **Validate** - Run `#tool:problems` to check markdown linting (no warnings)
+1. **Check code examples** - Find real patterns from `lib/src/rules/` and `lib/src/fixes/`
+2. **Validate** - Check for markdown linting warnings
 3. **Verify compilation** - All code examples must compile with `dart analyze`
 4. **Check links** - Ensure all file references exist (no broken links)
 5. **Check CHANGELOG** - Follow Conventional Commits format per #file:../instructions/commits.instructions.md

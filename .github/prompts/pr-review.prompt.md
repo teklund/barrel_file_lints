@@ -25,7 +25,7 @@ Apply expertise from #file:../agents/code-review.agent.md with these additional 
 1. **Git Status & Commits**
 
    - Run `git diff master...HEAD` to see all changes between branches
-   - Use #tool:changes to verify working tree is clean
+   - Check working tree is clean (no uncommitted changes)
    - Check all changes are committed
    - Suggest PR title following Conventional Commits format
    - Verify no merge conflicts with `git merge-base master HEAD`
@@ -33,8 +33,8 @@ Apply expertise from #file:../agents/code-review.agent.md with these additional 
 
 2. **Code Quality**
 
-   - Use #tool:problems to check `dart analyze --fatal-infos` (must pass with zero warnings)
-   - Use #tool:runTests to verify all tests pass
+   - Run `dart analyze --fatal-infos` (must pass with zero warnings)
+   - Run `dart test` to verify all tests pass
    - Check for TODO/FIXME comments in changed files
    - Verify null checks on AST node properties
    - Confirm regex patterns are static (not recompiled)
@@ -64,11 +64,11 @@ Execute these steps before providing review:
 
 1. Run `git diff master...HEAD --name-only` to list all changed files
 2. Run `git diff master...HEAD` to see full diff between branches
-3. Use #tool:changes to verify working tree is clean (no uncommitted changes)
+3. Check working tree is clean (no uncommitted changes)
 4. Analyze changed files from the diff
-5. Use #tool:problems to run analysis and report errors
-6. Use #tool:runTests to verify all tests pass
-7. Use #tool:search to find TODO/FIXME comments in changed files
+5. Run `dart analyze --fatal-infos` and report errors
+6. Run `dart test` to verify all tests pass
+7. Search for TODO/FIXME comments in changed files
 8. Review against code-review-agent standards:
    - Null safety on AST nodes
    - Static regex patterns

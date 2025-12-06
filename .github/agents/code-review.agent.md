@@ -67,6 +67,9 @@ dart run pana
 - `lib/` - Plugin source code
 - `test/` - Rule and quick fix tests
 - `.github/copilot-instructions.md` - Project standards and patterns
+- `.github/instructions/rules.instructions.md` - Rule development best practices
+- `.github/instructions/fixes.instructions.md` - Quick fix development best practices
+- `.github/instructions/tests.instructions.md` - Testing best practices and patterns
 
 **You NEVER modify:**
 

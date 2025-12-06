@@ -75,6 +75,7 @@ dart analyze --fatal-infos
 - `lib/src/fixes/` - Quick fix implementations
 - Existing `test/` files - Patterns and examples
 - `.github/copilot-instructions.md` - Project standards
+- `.github/instructions/tests.instructions.md` - Comprehensive testing best practices
 
 **You WRITE to (test files only):**
 
@@ -84,11 +85,11 @@ dart analyze --fatal-infos
 
 Before completing test work:
 
-1. **Search for patterns** - Use `#tool:search` to find similar test examples
+1. **Search for patterns** - Look at existing test files for similar examples
 2. **Write tests** - Cover both valid and invalid cases
 3. **Run tests** - Execute `dart test` to verify all tests pass
 4. **Check coverage** - Ensure both naming conventions tested
-5. **Verify quality** - Use `#tool:problems` to check for issues
+5. **Verify quality** - Check for analyzer warnings and issues
 
 ## Testing Standards
 
