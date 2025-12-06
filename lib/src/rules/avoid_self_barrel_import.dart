@@ -1,24 +1,22 @@
-/// Lint rule: Files within a feature should not import their own barrel file
-library;
-
 import 'package:analyzer/analysis_rule/analysis_rule.dart';
 import 'package:analyzer/analysis_rule/rule_context.dart';
 import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/error/error.dart';
-
 import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 
-/// Lint rule: Files within a feature should not import their own barrel file
-/// or use unnecessarily complex relative paths within the same feature
+/// Prevents self-barrel imports within a feature.
 ///
-/// ✅ Correct: import 'package:myapp/feature_auth/data/auth_service.dart';
-/// ✅ Correct: import 'extensions/order_extensions.dart'; (within same directory)
-/// ❌ Wrong: import 'package:myapp/feature_auth/auth.dart'; (from within feature_auth)
-/// ❌ Wrong: import '../../feature_order/data/extensions/file.dart'; (from within feature_order)
+/// Files within a feature should use direct imports to avoid circular
+/// dependencies. This rule also detects unnecessarily complex relative paths
+/// that escape and re-enter the same feature.
+///
+/// For example, in `feature_auth/data/repository.dart`, importing
+/// `package:myapp/feature_auth/auth.dart` creates a self-barrel import that
+/// should be replaced with direct imports like `auth_service.dart`.
 class AvoidSelfBarrelImport extends AnalysisRule {
-  /// Creates a new instance of [AvoidSelfBarrelImport]
+  /// Creates a rule instance with default configuration.
   AvoidSelfBarrelImport()
     : super(
         name: 'avoid_self_barrel_import',
@@ -26,7 +24,7 @@ class AvoidSelfBarrelImport extends AnalysisRule {
             'Files within a feature should not import their own barrel file',
       );
 
-  /// The lint code for this rule
+  /// Diagnostic code reported when a feature imports its own barrel file.
   static const LintCode code = LintCode(
     'avoid_self_barrel_import',
     "Avoid importing your own feature's barrel file '{0}'. Use direct imports within the same feature to prevent circular dependencies.",
@@ -48,13 +46,9 @@ class AvoidSelfBarrelImport extends AnalysisRule {
 
 /// Visitor that detects self-barrel imports.
 class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
-  /// Creates a visitor for detecting self-barrel imports.
   _SelfBarrelImportVisitor(this.rule, this.context);
 
-  /// The rule that created this visitor.
   final AnalysisRule rule;
-
-  /// The context for the current analysis.
   final RuleContext context;
 
   @override
@@ -96,23 +90,25 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
       // Check if it's the barrel file (NOT an internal directory)
       if (!isInternalImport(uri)) {
         // This is importing the feature's own barrel file - check if it's actually the barrel
-        if (_isBarrelFileImport(uri, importedFeature)) {
+        if (_isBarrelFileImport(uri, importedFeature, currentPath)) {
           rule.reportAtNode(node, arguments: [importedFeature.featureDir]);
         }
       }
     }
   }
 
-  /// Check if a relative URI points to the barrel file
-  /// e.g., '../auth.dart' from 'feature_auth/ui/file.dart' should be detected
-  /// But '../item.dart' from 'feature_store/data/models/legacy/file.dart' should NOT
-  /// (that would resolve to models/item.dart, not the barrel)
+  // Check if a relative URI points to the barrel file (monolithic or split)
+  // e.g., '../auth.dart' from 'feature_auth/ui/file.dart' should be detected
+  // e.g., '../auth_data.dart' from 'feature_auth/data/file.dart' should be detected
+  // But '../auth_domain.dart' from 'feature_auth/data/file.dart' should NOT (different layer)
+  // And '../item.dart' from 'feature_store/data/models/legacy/file.dart' should NOT
+  // (that would resolve to models/item.dart, not the barrel)
   bool _isRelativeBarrelImport(String uri, FeatureMatch feature) {
     final segments = uri.split('/');
     final fileName = segments.last;
 
-    // Check if filename matches the feature's barrel file name
-    if (fileName != '${feature.featureName}.dart') {
+    // Check if filename matches any barrel file name
+    if (!isBarrelFileName(fileName, feature.featureName)) {
       return false;
     }
 
@@ -133,12 +129,24 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
     // e.g., from feature_auth/ui/file.dart (depth 1), '../auth.dart' reaches the barrel
     // but from feature_store/data/models/legacy/file.dart (depth 3), '../item.dart'
     // only goes to models/item.dart, not the barrel
-    return upLevels == currentDepth;
+    if (upLevels != currentDepth) {
+      return false;
+    }
+
+    // For split barrels, only flag if importing own layer's barrel
+    if (fileName == '${feature.featureName}.dart') {
+      // Monolithic barrel - always flag
+      return true;
+    }
+
+    // Check if it's a split barrel matching the current file's layer
+    final currentLayer = getLayerFromPath(currentPath);
+    return isBarrelFileName(fileName, feature.featureName, currentLayer);
   }
 
-  /// Get the depth of the current file within its feature directory
-  /// e.g., feature_auth/ui/file.dart has depth 1 (one level below feature root)
-  ///       feature_store/data/models/legacy/file.dart has depth 3
+  // Get the depth of the current file within its feature directory.
+  // e.g., feature_auth/ui/file.dart has depth 1 (one level below feature root)
+  //       feature_store/data/models/legacy/file.dart has depth 3
   int _getDepthWithinFeature(String path, FeatureMatch feature) {
     // Find where the feature directory appears in the path
     final featureIndex = path.indexOf(feature.featureDir);
@@ -159,8 +167,8 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
     return '/'.allMatches(directoryPath).length;
   }
 
-  /// Check if a relative path unnecessarily escapes and re-enters the same feature
-  /// e.g., '../../feature_order/data/extensions/file.dart' from within feature_order
+  // Check if a relative path unnecessarily escapes and re-enters the same feature.
+  // e.g., '../../feature_order/data/extensions/file.dart' from within feature_order
   bool _isRedundantRelativePath(String uri, FeatureMatch currentFeature) {
     // Only check paths that go up with ../
     if (!uri.contains('../')) return false;
@@ -174,16 +182,30 @@ class _SelfBarrelImportVisitor extends SimpleAstVisitor<void> {
     return importedFeature.featureDir == currentFeature.featureDir;
   }
 
-  /// Check if the URI points to a barrel file
-  /// Barrel files are typically named after the feature (e.g., auth.dart for feature_auth)
-  bool _isBarrelFileImport(String uri, FeatureMatch feature) {
+  // Check if the URI points to a barrel file (monolithic or split).
+  // Barrel files are typically named after the feature:
+  // - Monolithic: auth.dart
+  // - Split: auth_data.dart, auth_domain.dart, auth_ui.dart, etc.
+  //
+  // For split barrels, only flag if the file is importing its own layer's barrel.
+  // e.g., data/service.dart importing auth_data.dart is a violation,
+  /// but data/service.dart importing auth_domain.dart is allowed.
+  bool _isBarrelFileImport(
+    String uri,
+    FeatureMatch feature,
+    String currentFilePath,
+  ) {
     // Extract just the filename from the URI
     final segments = uri.split('/');
     final fileName = segments.isNotEmpty ? segments.last : '';
 
-    // Check if filename matches the feature name + .dart
-    // e.g., for feature_auth, barrel is auth.dart
-    // e.g., for features/auth, barrel is auth.dart
-    return fileName == '${feature.featureName}.dart';
+    // Check if filename matches the feature name + .dart (monolithic)
+    if (fileName == '${feature.featureName}.dart') {
+      return true;
+    }
+
+    // Check for split barrel patterns - only flag if importing own layer's barrel
+    final currentLayer = getLayerFromPath(currentFilePath);
+    return isBarrelFileName(fileName, feature.featureName, currentLayer);
   }
 }

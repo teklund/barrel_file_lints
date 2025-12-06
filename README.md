@@ -17,6 +17,7 @@ A Dart 3.10+ analyzer plugin that enforces barrel file import rules for feature-
 - [Getting Started](#getting-started)
 - [Rules](#rules)
 - [CLI Tool: Cycle Detection](#cli-tool-cycle-detection)
+- [Setting Up Split Barrel Files](#setting-up-split-barrel-files)
 - [Suppressing Warnings](#suppressing-warnings)
 - [Architecture Pattern](#architecture-pattern)
 - [Troubleshooting](#troubleshooting)
@@ -36,6 +37,40 @@ export 'ui/login_page.dart';
 
 This enforces encapsulation and provides clear feature boundaries.
 
+### Barrel File Strategies
+
+This plugin supports two barrel file strategies:
+
+#### 1. **Monolithic Barrels** (Simpler)
+
+One barrel file per feature that exports everything:
+
+```dart
+// lib/feature_auth/auth.dart
+export 'data/auth_repository.dart';
+export 'domain/auth_use_case.dart';
+export 'ui/login_screen.dart';
+```
+
+**Trade-off:** When Feature A's data layer imports Feature B's barrel, it gains compile-time dependency on Feature B's UI layer (even if unused). Tree-shaking removes unused code at runtime.
+
+#### 2. **Split Barrels** (Layer-Specific)
+
+Separate barrel files per architectural layer:
+
+```dart
+// lib/feature_auth/auth_data.dart
+export 'data/auth_repository.dart';
+
+// lib/feature_auth/auth_domain.dart
+export 'domain/auth_use_case.dart';
+
+// lib/feature_auth/auth_ui.dart
+export 'ui/login_screen.dart';
+```
+
+**Benefit:** Enforces strict layer boundaries - data layer can only import `xxx_data.dart` barrels, preventing UI dependencies.
+
 ### Trade-offs
 
 **Benefits:**
@@ -44,11 +79,12 @@ This enforces encapsulation and provides clear feature boundaries.
 - Explicit public API for each module
 - Easier to refactor internal implementations
 - Prevents tight coupling
+- **Split barrels**: Enforce clean architecture layer separation
 
 **Considerations:**
 
 - In very large projects, barrel files can impact analyzer performance ([Dart SDK #50369](https://github.com/dart-lang/sdk/issues/50369))
-- May introduce false dependency edges
+- **Monolithic barrels**: May introduce false dependency edges between layers
 - This plugin is designed for feature-level barrel files (coarse-grained), not component-level exports (fine-grained), which minimizes performance impact
 
 ## Why Use This Plugin?
@@ -104,9 +140,17 @@ plugins:
       # Prevent barrels from exporting other features
       avoid_cross_feature_barrel_exports: true
       
-      # Detect immediate circular dependencies between barrels
-      # Use CLI tool for transitive cycle detection
-      avoid_barrel_cycle: true
+      # Enforce clean architecture layer boundaries (split barrels)
+      # Warns when data/domain layers import barrels with UI exports
+      avoid_improper_layer_import: true
+      
+      # Prevent UI framework imports in domain/data layers
+      # Enforces framework-agnostic business logic
+      avoid_ui_framework_in_logic: true
+      
+      # Discourage relative imports for cross-feature barrel files
+      # Encourages package imports for better clarity and refactoring safety
+      avoid_relative_barrel_imports: true
 ```
 
 **Note:** Rules are disabled by default. Explicitly enable the rules that match your architecture needs.
@@ -128,6 +172,22 @@ import 'package:myapp/feature_auth/data/auth_service.dart';
 ```
 
 **Quick Fix:** Automatically replaces internal imports with barrel file imports.
+
+### `avoid_relative_barrel_imports`
+
+Cross-feature barrel imports should use package imports instead of relative imports. This improves code clarity, refactoring safety, and IDE support.
+
+```dart
+// ✅ Correct - package import
+import 'package:myapp/feature_tickets/tickets.dart';
+
+// ⚠️  Discouraged - relative import to cross-feature barrel
+import '../../feature_tickets/tickets.dart';
+```
+
+**Note:** Relative imports within the same feature are still allowed. This rule only flags relative imports to other features' barrel files.
+
+**Quick Fix:** Automatically converts relative barrel imports to package imports.
 
 ### `avoid_core_importing_features`
 
@@ -188,21 +248,140 @@ export '../common/widgets.dart';
 
 **Quick Fix:** Removes the cross-feature export directive.
 
-### `avoid_barrel_cycle`
+### `avoid_improper_layer_import`
 
-Barrel files should not create immediate circular dependencies where two barrels export each other.
+Enforces clean architecture layer boundaries following the dependency rule: **UI → Data → Domain** (dependencies point inward). Domain is the innermost layer and cannot import Data or UI. Data layer can import Domain (implements domain interfaces). UI layer can import everything. Works with both **monolithic** and **split barrel** files.
+
+#### With Split Barrels (Recommended)
 
 ```dart
-// In lib/feature_auth/auth.dart
-// ❌ Wrong - exports feature_profile barrel
-export '../feature_profile/profile.dart';
+// In lib/feature_a/data/repository_impl.dart
 
-// In lib/feature_profile/profile.dart
-// ❌ Wrong - exports feature_auth barrel (creates cycle)
-export '../feature_auth/auth.dart';
+// ✅ Correct - Data can import Domain (implements interfaces)
+import 'package:myapp/feature_b/b_domain.dart';
+
+// ✅ Correct - Data can import Data
+import 'package:myapp/feature_c/c_data.dart';
+
+// ❌ Wrong - Data layer cannot import UI barrel
+import 'package:myapp/feature_d/d_ui.dart';
 ```
 
-This rule detects **immediate 2-node cycles** during development. For detecting **transitive cycles** (A → B → C → A), use the [CLI tool](#cli-tool-cycle-detection).
+```dart
+// In lib/feature_a/domain/use_case.dart
+
+// ✅ Correct - Domain can import Domain
+import 'package:myapp/feature_b/b_domain.dart';
+
+// ❌ Wrong - Domain cannot import Data (innermost layer)
+import 'package:myapp/feature_c/c_data.dart';
+
+// ❌ Wrong - Domain cannot import UI
+import 'package:myapp/feature_d/d_ui.dart';
+```
+
+#### With Monolithic Barrels
+
+When data or domain layers import monolithic barrels, the rule warns and suggests using split barrels instead:
+
+```dart
+// lib/feature_b/b.dart (monolithic barrel)
+export 'data/repository.dart';
+export 'ui/screen.dart';
+
+// In lib/feature_a/data/repository.dart
+// ❌ Warning: Data layer should use split barrel instead
+import 'package:myapp/feature_b/b.dart';
+
+// ✅ Correct: Use layer-specific barrel
+import 'package:myapp/feature_b/b_data.dart';
+```
+
+**Note:** UI layer can import monolithic barrels without warnings since it has no import restrictions.
+
+#### Layer Rules (Clean Architecture)
+
+**Dependency Direction:** UI → Data → Domain (arrows point inward)
+
+- **Domain layer** (innermost/core): Cannot import Data or UI layers. Contains business logic, entities, use cases.
+- **Data layer** (infrastructure): Can import Domain layer (implements domain interfaces). Cannot import UI layer. Contains repositories, data sources.
+- **UI layer** (presentation/outermost): Can import Domain and Data layers (no restrictions). Contains widgets, screens, state management.
+
+**Quick Fix:** When available, suggests using layer-specific barrel imports (e.g., `xxx_data.dart` instead of `xxx.dart`). Note: This quick fix is only available when layer-specific barrels exist in the imported feature.
+
+### `avoid_ui_framework_in_logic`
+
+Enforces framework independence in Domain and Data layers by preventing UI framework imports (Flutter, etc.). Domain layer should contain pure business logic without UI dependencies. Data layer should implement domain interfaces without UI framework coupling.
+
+```dart
+// In lib/feature_auth/domain/use_cases/login.dart
+
+// ✅ Correct - Dart core libraries are allowed
+import 'dart:async';
+import 'package:meta/meta.dart';
+
+// ✅ Correct - Domain interfaces
+import '../repositories/auth_repository.dart';
+
+// ❌ Wrong - Flutter framework in domain layer
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+```
+
+```dart
+// In lib/feature_auth/data/repositories/auth_repository_impl.dart
+
+// ✅ Correct - Dart libraries and external packages
+import 'dart:convert';
+import 'package:http/http.dart';
+
+// ✅ Correct - Domain interfaces
+import '../../domain/repositories/auth_repository.dart';
+
+// ✅ Correct - foundation.dart is allowed (kDebugMode, compute, etc.)
+import 'package:flutter/foundation.dart';
+
+// ❌ Wrong - UI framework in data layer
+import 'package:flutter/services.dart';
+```
+
+```dart
+// In lib/feature_auth/ui/pages/login_page.dart
+
+// ✅ Correct - Flutter is allowed in UI/presentation layer
+import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+
+// ✅ Correct - Domain use cases
+import '../../domain/use_cases/login.dart';
+```
+
+#### Allowed Imports in Domain/Data Layers
+
+- `dart:*` (all Dart core libraries)
+- `package:meta/meta.dart` (annotations like `@immutable`)
+- `package:flutter/foundation.dart` (platform-agnostic utilities: `kDebugMode`, `compute()`, etc.)
+- Internal feature imports and barrel files
+- External non-Flutter packages (e.g., `package:http`, `package:dio`)
+- Test files can import `package:flutter_test/flutter_test.dart`
+
+#### Forbidden Imports in Domain/Data Layers
+
+- `package:flutter/material.dart`
+- `package:flutter/widgets.dart`
+- `package:flutter/cupertino.dart`
+- `package:flutter/services.dart`
+- `package:flutter/rendering.dart`
+- Any other `package:flutter/*` UI packages (except `foundation.dart` and `flutter_test` in test files)
+
+**Rationale:** Following Clean Architecture principles, the domain layer represents pure business logic that should be framework-agnostic. This enables:
+
+- Testing without Flutter framework dependencies
+- Potential code reuse across platforms (e.g., backend, CLI tools)
+- Clear separation of concerns
+- Easier migration to different UI frameworks if needed
+
+**Note:** Test files (`*_test.dart` or files in `test/`, `test_driver/`, `integration_test/` directories) are exempt from this rule and can import Flutter testing utilities.
 
 ## CLI Tool: Cycle Detection
 
@@ -230,6 +409,68 @@ Add to your CI pipeline to prevent circular dependencies:
 ```
 
 See [bin/README.md](bin/README.md) for detailed documentation.
+
+## Setting Up Split Barrel Files
+
+To enforce strict layer boundaries, create separate barrel files for each architectural layer:
+
+### File Structure
+
+```text
+lib/
+└── feature_auth/
+    ├── auth.dart           # Optional: main barrel (re-exports all)
+    ├── auth_data.dart      # Data layer barrel
+    ├── auth_domain.dart    # Domain layer barrel
+    ├── auth_ui.dart        # UI layer barrel
+    ├── data/
+    │   ├── auth_repository.dart
+    │   └── auth_datasource.dart
+    ├── domain/
+    │   ├── auth_use_case.dart
+    │   └── auth_entity.dart
+    └── ui/
+        ├── login_screen.dart
+        └── auth_widgets.dart
+```
+
+### Barrel File Contents
+
+```dart
+// lib/feature_auth/auth_data.dart
+export 'data/auth_repository.dart';
+export 'data/auth_datasource.dart';
+
+// lib/feature_auth/auth_domain.dart
+export 'domain/auth_use_case.dart';
+export 'domain/auth_entity.dart';
+
+// lib/feature_auth/auth_ui.dart
+export 'ui/login_screen.dart';
+export 'ui/auth_widgets.dart';
+
+// lib/feature_auth/auth.dart (optional convenience barrel)
+export 'auth_data.dart';
+export 'auth_domain.dart';
+export 'auth_ui.dart';
+```
+
+### Usage
+
+```dart
+// In feature_profile/data/profile_repository.dart
+import 'package:myapp/feature_auth/auth_data.dart';    // ✅ Only data layer
+import 'package:myapp/feature_auth/auth_domain.dart';  // ✅ Domain entities
+
+// In feature_profile/ui/profile_screen.dart
+import 'package:myapp/feature_auth/auth_ui.dart';      // ✅ UI components
+import 'package:myapp/feature_auth/auth_domain.dart';  // ✅ Domain logic
+```
+
+With `avoid_improper_layer_import` enabled, the plugin will warn if:
+
+- Data/domain layers try to import `xxx_ui.dart` barrels
+- Domain layer tries to import `xxx_data.dart` barrels
 
 ## Suppressing Warnings
 

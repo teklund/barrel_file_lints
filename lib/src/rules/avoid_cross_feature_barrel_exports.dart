@@ -1,23 +1,18 @@
-/// Lint rule: Barrel files must only export from their own feature folder
-library;
-
 import 'package:analyzer/analysis_rule/analysis_rule.dart';
 import 'package:analyzer/analysis_rule/rule_context.dart';
 import 'package:analyzer/analysis_rule/rule_visitor_registry.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/error/error.dart';
-
 import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 
-/// Lint rule: Barrel files must only export from their own feature folder
+/// Prevents cross-feature exports in barrel files.
 ///
-/// ✅ Correct: export 'data/auth_service.dart'; (in feature_auth/auth.dart)
-/// ✅ Correct: export 'ui/login_page.dart'; (in feature_auth/auth.dart)
-/// ❌ Wrong: export '../feature_users/data/user.dart'; (in feature_auth/auth.dart)
-/// ❌ Wrong: export '../common/widgets.dart'; (in feature_auth/auth.dart)
+/// Barrel files should only export files from their own feature folder.
+/// Exporting from other features or common folders violates feature
+/// encapsulation boundaries. Each feature should only expose its own code.
 class AvoidCrossFeatureBarrelExports extends AnalysisRule {
-  /// Creates a new instance of [AvoidCrossFeatureBarrelExports]
+  /// Creates a rule instance with default configuration.
   AvoidCrossFeatureBarrelExports()
     : super(
         name: 'avoid_cross_feature_barrel_exports',
@@ -25,7 +20,7 @@ class AvoidCrossFeatureBarrelExports extends AnalysisRule {
             'Barrel files must only export from their own feature folder',
       );
 
-  /// The lint code for this rule
+  /// Diagnostic code reported when barrel exports files from other features.
   static const LintCode code = LintCode(
     'avoid_cross_feature_barrel_exports',
     "Barrel file cannot export '{0}' from outside its own feature. Barrel files should only export their own feature's files.",
@@ -41,19 +36,18 @@ class AvoidCrossFeatureBarrelExports extends AnalysisRule {
     RuleVisitorRegistry registry,
     RuleContext context,
   ) {
-    registry.addExportDirective(this, _BarrelExportVisitor(this, context));
+    registry.addExportDirective(
+      this,
+      _CrossFeatureExportVisitor(this, context),
+    );
   }
 }
 
 /// Visitor that detects cross-feature exports in barrel files.
-class _BarrelExportVisitor extends SimpleAstVisitor<void> {
-  /// Creates a visitor for detecting cross-feature exports.
-  _BarrelExportVisitor(this.rule, this.context);
+class _CrossFeatureExportVisitor extends SimpleAstVisitor<void> {
+  _CrossFeatureExportVisitor(this.rule, this.context);
 
-  /// The rule that created this visitor.
   final AnalysisRule rule;
-
-  /// The context for the current analysis.
   final RuleContext context;
 
   @override

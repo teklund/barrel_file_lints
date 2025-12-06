@@ -7,7 +7,6 @@
 ///
 /// Note: Full fix application testing requires IDE integration testing.
 /// These tests verify the fix infrastructure and logic are sound.
-library;
 
 import 'package:barrel_file_lints/barrel_file_lints.dart';
 import 'package:test/test.dart';

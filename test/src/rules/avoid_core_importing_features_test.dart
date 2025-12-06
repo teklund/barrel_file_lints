@@ -1,3 +1,10 @@
+/// Tests for avoid_core_importing_features rule
+///
+/// Test organization:
+/// - Valid cases: Core imports non-feature modules, features import core
+/// - Invalid cases: Core imports feature modules (violates dependency direction)
+/// - Coverage: Both naming conventions (feature_xxx and features/xxx)
+
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 import 'package:barrel_file_lints/barrel_file_lints.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';

@@ -18,7 +18,6 @@ plugins:
       avoid_core_importing_features: true
       avoid_self_barrel_import: true
       avoid_cross_feature_barrel_exports: true
-      avoid_barrel_cycle: true
 ```
 
 ## 3. Example violations
@@ -86,16 +85,72 @@ export 'data/auth_service.dart';
 export '../feature_profile/data/user.dart';
 ```
 
-### Bad: Barrel cycle
+**Note:** For detecting circular dependencies between barrel files, use the CLI tool:
+
+```bash
+dart run barrel_file_lints:check_cycles
+```
+
+This detects both immediate (A ↔ B) and transitive cycles (A → B → C → A).
+
+### Bad: Improper layer import
 
 ```dart
-// lib/feature_auth/auth.dart
-// ❌ This will trigger avoid_barrel_cycle
-export '../feature_profile/profile.dart';
+// lib/feature_profile/data/profile_repository.dart
 
-// lib/feature_profile/profile.dart
-// ❌ Creates a cycle back to auth
-export '../feature_auth/auth.dart';
+// ❌ This will trigger avoid_improper_layer_import
+// (if feature_settings/settings.dart exports UI layer)
+import 'package:myapp/feature_settings/settings.dart';
+
+class ProfileRepository {
+  // Data layer should not depend on UI layer
+}
+```
+
+### Good: Layer-specific barrel import
+
+```dart
+// lib/feature_profile/data/profile_repository.dart
+
+// ✅ Use layer-specific barrel
+import 'package:myapp/feature_settings/settings_data.dart';
+
+class ProfileRepository {
+  // Only imports data layer
+}
+```
+
+### Bad: Flutter in domain layer
+
+```dart
+// lib/feature_auth/domain/use_cases/login_use_case.dart
+
+// ❌ This will trigger avoid_ui_framework_in_logic
+import 'package:flutter/material.dart';
+
+class LoginUseCase {
+  // Domain layer should be framework-agnostic
+}
+```
+
+### Good: Framework-agnostic domain
+
+```dart
+// lib/feature_auth/domain/use_cases/login_use_case.dart
+
+import 'dart:async';
+import '../repositories/auth_repository.dart';
+
+// ✅ Pure Dart, no Flutter dependencies
+class LoginUseCase {
+  final AuthRepository _repository;
+  
+  LoginUseCase(this._repository);
+  
+  Future<void> execute(String email, String password) async {
+    // Business logic only
+  }
+}
 ```
 
 ## 4. Run analysis

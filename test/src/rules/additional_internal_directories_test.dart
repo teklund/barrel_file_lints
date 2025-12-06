@@ -1,3 +1,11 @@
+/// Tests for extended internal directory detection
+///
+/// Verifies all internal directories are properly detected:
+/// - Common: data/, ui/, domain/, models/, services/
+/// - State management: bloc/, cubit/, providers/, notifiers/
+/// - Clean architecture: presentation/, infrastructure/, application/
+/// - Utilities: utils/, helpers/, config/, widgets/, repositories/
+
 import 'package:analyzer_testing/analysis_rule/analysis_rule.dart';
 import 'package:barrel_file_lints/barrel_file_lints.dart';
 import 'package:test_reflective_loader/test_reflective_loader.dart';

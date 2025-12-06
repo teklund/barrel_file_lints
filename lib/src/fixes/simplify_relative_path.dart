@@ -1,21 +1,18 @@
-/// Quick fix to simplify redundant relative paths within the same feature
-library;
-
 import 'package:analysis_server_plugin/edit/dart/correction_producer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer_plugin/utilities/change_builder/change_builder_core.dart';
 import 'package:analyzer_plugin/utilities/fixes/fixes.dart';
 import 'package:analyzer_plugin/utilities/range_factory.dart';
-
 import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 
-/// Quick fix to simplify redundant relative paths within the same feature
+/// Simplifies redundant relative paths within the same feature.
 ///
-/// Changes: import '../../feature_auth/data/auth_service.dart';
-/// To:      import 'auth_service.dart'; (if in same directory)
-/// Or:      import 'data/auth_service.dart'; (if in different directory)
+/// Converts complex relative paths that escape and re-enter the same feature
+/// into simpler direct relative paths. For example, if a file in
+/// `feature_auth/data/` imports `../../feature_auth/data/auth_service.dart`,
+/// this simplifies it to `auth_service.dart`.
 class SimplifyRelativePath extends ResolvedCorrectionProducer {
-  /// Quick fix to simplify redundant relative paths
+  /// Creates a fix instance for the current resolution context.
   SimplifyRelativePath({required super.context});
 
   static const _fixKind = FixKind(
@@ -63,7 +60,7 @@ class SimplifyRelativePath extends ResolvedCorrectionProducer {
     });
   }
 
-  /// Calculate the simplified relative path from current file to target
+  /// Calculates the simplified relative path from current file to target.
   String? _calculateSimplifiedPath(String importUri, String currentPath) {
     // Parse the import URI to find the target path within the feature
     // Example: '../../feature_order/data/extensions/order_extensions.dart'
@@ -120,7 +117,7 @@ class SimplifyRelativePath extends ResolvedCorrectionProducer {
     return _buildRelativePath(currentInFeatureSegments, targetPathSegments);
   }
 
-  /// Build a relative path from current directory to target
+  /// Builds a relative path from current directory to target.
   String _buildRelativePath(List<String> currentDir, List<String> targetPath) {
     // Find the common prefix
     int commonLength = 0;

@@ -1,19 +1,16 @@
-/// Quick fix: Remove feature import from core (with comment)
-library;
-
 import 'package:analysis_server_plugin/edit/dart/correction_producer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer_plugin/utilities/change_builder/change_builder_core.dart';
 import 'package:analyzer_plugin/utilities/fixes/fixes.dart';
 import 'package:analyzer_plugin/utilities/range_factory.dart';
 
-/// Quick fix: Remove feature import from core (with comment)
+/// Comments out feature imports from core with a TODO marker.
 ///
-/// Changes: import 'package:myapp/feature_auth/auth.dart';
-/// To:      // TODO: Move this dependency out of core
-///          // import 'package:myapp/feature_auth/auth.dart';
+/// Converts illegal feature imports into commented code with a refactoring
+/// reminder. The import is preserved as a comment to indicate that this
+/// dependency needs to be moved out of the core module.
 class RemoveFeatureImport extends ResolvedCorrectionProducer {
-  /// Creates a quick fix for commenting out feature imports from core.
+  /// Creates a fix instance for the current resolution context.
   RemoveFeatureImport({required super.context});
 
   static const _fixKind = FixKind(

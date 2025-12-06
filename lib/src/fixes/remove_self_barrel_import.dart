@@ -1,19 +1,16 @@
-/// Quick fix to remove self-barrel import
-library;
-
 import 'package:analysis_server_plugin/edit/dart/correction_producer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer_plugin/utilities/change_builder/change_builder_core.dart';
 import 'package:analyzer_plugin/utilities/fixes/fixes.dart';
 import 'package:analyzer_plugin/utilities/range_factory.dart';
 
-/// Quick fix to remove self-barrel import
+/// Removes self-barrel imports from files within a feature.
 ///
-/// Removes: import 'package:myapp/feature_auth/auth.dart';
-/// Or:      import '../auth.dart';
-/// When the import is from within the same feature
+/// Deletes circular imports where a feature imports its own barrel file.
+/// Files within a feature should use direct imports instead to avoid
+/// circular dependencies.
 class RemoveSelfBarrelImport extends ResolvedCorrectionProducer {
-  /// Creates a quick fix for removing self-barrel imports
+  /// Creates a fix instance for the current resolution context.
   RemoveSelfBarrelImport({required super.context});
 
   static const _fixKind = FixKind(
