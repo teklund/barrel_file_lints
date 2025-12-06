@@ -1,101 +1,94 @@
 ---
 agent: test-agent
-description: 'Quick review of test files for quality and best practices'
-name: 'test-review'
-argument-hint: 'scope=<test-file-or-directory>'
+description: "Review analyzer plugin tests using analyzer_testing framework"
+name: "test-review"
+argument-hint: "scope=<test-file-or-directory>"
 ---
 
 # Test Review
 
-You are reviewing test code using the test-agent expertise. Analyze test files for quality, coverage, and adherence to Flutter testing best practices.
+Conduct a focused review of analyzer plugin test files. Analyze test quality, coverage, and adherence to analyzer_testing framework best practices.
 
 ## Context
 
 Workspace: ${workspaceFolder}
 Test scope: ${input:scope:What tests to review? (file path, directory, or leave empty for current file)}
-Focus area: ${input:focus:Any specific concern? (coverage, mocking, assertions, etc.)}
+Focus area: ${input:focus:Any specific concern? (coverage, rule behavior, quick fixes, etc.)}
 
 ## Review Approach
 
 Apply your testing expertise from #file:../agents/test.agent.md with a **quick, focused approach**:
 
-- Prioritize critical test quality issues
-- Check test structure and patterns
-- Verify mocking strategy
-- Assess coverage completeness
-- Validate assertion quality
+- Check analyzer_testing framework usage
+- Verify both naming conventions tested (`feature_xxx/` and `features/xxx/`)
+- Validate test structure and patterns
+- Assess rule coverage completeness
+- Verify quick fix functionality
 
 ## Test Quality Checklist
 
-### ✅ Structure & Organization
+### ✅ Test Framework Usage
 
-- [ ] Descriptive test names (behavior-driven, not implementation)
-- [ ] Proper use of `group()` for logical organization
-- [ ] Follows naming conventions (`*_unit_test.dart`, `*_widget_test.dart`, etc.)
-- [ ] Mirrors `lib/` directory structure
-- [ ] One behavior per test (single responsibility)
+- [ ] Uses `analyzer_testing` package correctly
+- [ ] Extends `AnalysisRuleTest` base class
+- [ ] Uses `test_reflective_loader` for test discovery (`defineReflectiveSuite`, `defineReflectiveTests`)
+- [ ] Proper `@reflectiveTest` annotation on test class
+- [ ] Correct `setUp()` with rule initialization
+- [ ] Uses `newFile()` to create test project files
 
-### ✅ Test Independence
+### ✅ Test File Structure
 
-- [ ] No shared state between tests
-- [ ] Proper `setUp()` and `tearDown()` usage
-- [ ] Each test can run independently
-- [ ] No test order dependencies
-- [ ] Clean initialization for each test
+- [ ] Descriptive test names following pattern: `test_scenario_variant()`
+- [ ] Documentation comment at top: `/// Tests for [rule_name] rule`
+- [ ] Comment explaining test organization (valid/invalid/coverage sections)
+- [ ] Tests grouped by valid cases, invalid cases, edge cases
+- [ ] One behavior per test method
+- [ ] Follows naming: `*_test.dart` (not `*_unit_test.dart`)
 
-### ✅ Mocking Strategy
+### ✅ Naming Convention Coverage
 
-- [ ] Uses Mocktail for mocking
-- [ ] Mocks external dependencies (services, APIs, repos)
-- [ ] Doesn't mock pure functions or data classes
-- [ ] Proper mock setup with `when()` and `thenAnswer()`
-- [ ] Verifies interactions with `verify()` when needed
+- [ ] Tests `feature_xxx/` underscore pattern
+- [ ] Tests `features/xxx/` slash pattern
+- [ ] Both patterns tested for each rule behavior
+- [ ] Examples: `test_barrelImport_underscore()` and `test_barrelImport_slash()`
 
-### ✅ Assertions & Coverage
+### ✅ Test Cases Coverage
 
-- [ ] Tests happy path scenarios
-- [ ] Tests error cases and exceptions
-- [ ] Tests edge cases and boundaries
-- [ ] Tests null safety scenarios
-- [ ] Clear, meaningful assertions
-- [ ] Uses appropriate matchers (`expect()`, `throwsA()`, etc.)
+**Valid cases (no diagnostics):**
 
-### ✅ Async Handling
+- [ ] Barrel file imports tested
+- [ ] Same-feature imports tested
+- [ ] Test file exclusions verified
+- [ ] Relative imports within same feature
 
-- [ ] Proper `async`/`await` usage
-- [ ] No missing awaits (causes flaky tests)
-- [ ] Correct async stub setup with `thenAnswer((_) async => ...)`
-- [ ] Handles Future/Stream testing correctly
+**Invalid cases (diagnostics expected):**
 
-### ✅ Test-Specific Issues
+- [ ] Internal directory imports (`/data/`, `/ui/`, `/domain/`, `/presentation/`)
+- [ ] Cross-feature violations
+- [ ] All internal directory types covered
+- [ ] Deep nesting scenarios
 
-**Unit Tests:**
+**Edge cases:**
 
-- [ ] Tests business logic, not implementation details
-- [ ] Isolates code under test
-- [ ] Fast execution (no real I/O)
+- [ ] Test files excluded (`test/`, `*_test.dart`)
+- [ ] Relative imports (`../`, `../../`)
+- [ ] Same feature at different depths
+- [ ] Package vs relative imports
 
-**Widget Tests:**
+### ✅ Assertion Quality
 
-- [ ] Uses `pumpWidget()` properly
-- [ ] Mocks `AppLocalizations`
-- [ ] Uses appropriate finders (`find.byKey()`, `find.text()`)
-- [ ] Tests user interactions (`tap()`, `enterText()`)
-- [ ] Verifies UI state changes
+- [ ] Uses `assertNoDiagnosticsInFile()` for valid cases
+- [ ] Uses `assertDiagnostics()` with precise offset/length for invalid cases
+- [ ] Diagnostic messages include helpful context
+- [ ] Error codes match rule's LintCode
 
-**Golden Tests:**
+### ✅ Quick Fix Tests
 
-- [ ] Uses Alchemist patterns
-- [ ] Tests multiple states/themes
-- [ ] Commits CI goldens only (`goldens/ci/`)
-- [ ] Descriptive scenario names
-
-**Integration Tests:**
-
-- [ ] Uses Patrol Screen Object Model
-- [ ] Tagged with `'e2e'` for main workflows
-- [ ] Tests complete user journeys
-- [ ] Proper screen navigation
+- [ ] Tests fix registration with rule
+- [ ] Uses `assertHasFix()` to verify code transformation
+- [ ] Tests fix produces valid, compilable code
+- [ ] Tests both package and relative import fixes
+- [ ] Verifies fix handles edge cases
 
 ## Output Format
 
@@ -119,36 +112,37 @@ Keep the review focused and actionable. If tests look good, say so clearly!
 
 **Avoid:**
 
-- ❌ Vague test names: `test('works')`, `test('should return data')`
-- ❌ Multiple unrelated assertions per test
-- ❌ Testing implementation details instead of behavior
-- ❌ Shared mutable state between tests
-- ❌ Over-mocking (mocking pure functions, data classes)
-- ❌ Missing error case tests
-- ❌ Brittle finders in widget tests (prefer keys)
-- ❌ Missing `await` in async tests
-- ❌ Testing generated code (`*.g.dart`, `*.freezed.dart`)
-- ❌ Not using `setUp()` for repetitive initialization
+- ❌ Vague test names: `test_import()`, `test_case1()`
+- ❌ Not testing both naming conventions (`feature_xxx/` and `features/xxx/`)
+- ❌ Missing valid cases (only testing violations)
+- ❌ Missing edge cases (test files, relative imports, deep nesting)
+- ❌ Wrong diagnostic offsets/lengths in `assertDiagnostics()`
+- ❌ Not using `newFile()` to set up test files
+- ❌ Forgetting `@reflectiveTest` annotation
+- ❌ Not extending `AnalysisRuleTest`
+- ❌ Missing quick fix tests for rules with fixes
+- ❌ Testing only package imports, not relative imports
 
 **Prefer:**
 
-- ✅ Behavior-driven names: `test('returns user data when API call succeeds')`
-- ✅ One assertion per concept
-- ✅ Test behavior, not implementation
-- ✅ Isolated test setup in `setUp()`
-- ✅ Mock at boundaries (services, APIs)
-- ✅ Test both success and failure paths
-- ✅ Use `find.byKey()` with unique keys
-- ✅ Always `await` async operations
-- ✅ Test source code, not generated code
-- ✅ Clear arrange-act-assert structure
+- ✅ Descriptive names: `test_barrelFileImport_underscore()`, `test_internalDataImport_violation()`
+- ✅ Both `feature_xxx/` and `features/xxx/` patterns tested
+- ✅ Valid cases with `assertNoDiagnosticsInFile()`
+- ✅ Invalid cases with `assertDiagnostics()` and precise offsets
+- ✅ Edge case coverage (test files, relative imports, same feature)
+- ✅ Quick fix tests with `assertHasFix()` showing before/after
+- ✅ Clear test file setup with `newFile()`
+- ✅ Proper `setUp()` with rule initialization
+- ✅ Test both import types (package and relative)
+- ✅ Document test organization at file top
 
 ## Example Usage
 
 ```bash
 /test-review
-/test-review scope=test/feature_auth/
-/test-review scope=test/feature_ticket_purchase/data/purchase_service_unit_test.dart
-/test-review focus=mocking strategy
-/test-review focus=coverage gaps
+/test-review scope=test/
+/test-review scope=test/avoid_internal_feature_imports_test.dart
+/test-review focus=naming conventions
+/test-review focus=quick fixes
+/test-review focus=edge cases
 ```

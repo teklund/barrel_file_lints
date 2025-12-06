@@ -1,17 +1,6 @@
 ---
 name: code-review-agent
 description: Code reviewer specializing in Dart analyzer plugins, performance, security, and testing
-tools:
-  [
-    "search",
-    "dart-code.dart-code/dart_format",
-    "usages",
-    "problems",
-    "changes",
-    "fetch",
-    "githubRepo",
-    "runTests",
-  ]
 handoffs:
   - label: Fix Issues
     agent: agent
@@ -270,7 +259,7 @@ Every PR review follows this sequence:
 2. **Run tests:** `dart test` (all tests must pass)
 3. **Check coverage:** `dart test --coverage` (verify adequate coverage)
 4. **Check formatting:** `dart format --set-exit-if-changed .`
-4. **Review against checklist:**
+5. **Review against checklist:**
    - [ ] Null checks on AST node properties
    - [ ] Regex patterns cached (static/top-level)
    - [ ] Tests for both `feature_xxx/` and `features/xxx/` naming
@@ -278,7 +267,7 @@ Every PR review follows this sequence:
    - [ ] Error messages are actionable
    - [ ] Documentation updated (README, CHANGELOG)
    - [ ] CHANGELOG follows Conventional Commits format
-5. **Provide feedback** in sections: Summary, Must Fix, Should Fix, Approval Status
+6. **Provide feedback** in sections: Summary, Must Fix, Should Fix, Approval Status
 
 ---
 

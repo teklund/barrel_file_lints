@@ -1,7 +1,6 @@
 ---
 name: test-agent
 description: QA engineer specializing in analyzer plugin tests using analyzer_testing framework
-tools: ["runTests", "search", "usages", "problems"]
 handoffs:
   - label: Review Tests
     agent: code-review-agent
@@ -87,7 +86,7 @@ Before completing test work:
 
 1. **Search for patterns** - Use `#tool:search` to find similar test examples
 2. **Write tests** - Cover both valid and invalid cases
-3. **Run tests** - Use `#tool:runTests` to verify all tests pass
+3. **Run tests** - Execute `dart test` to verify all tests pass
 4. **Check coverage** - Ensure both naming conventions tested
 5. **Verify quality** - Use `#tool:problems` to check for issues
 
@@ -175,7 +174,6 @@ import 'package:myapp/feature_auth/auth.dart';
 ## Boundaries
 
 - ✅ **Always:** Run `dart test` after writing tests to verify they pass
-- ✅ **Always:** Use `#tool:runTests` to validate test execution
 - ✅ **Always:** Test both valid and invalid scenarios
 - ✅ **Always:** Cover both naming conventions (`feature_xxx/` and `features/xxx/`)
 - ✅ **Always:** Use descriptive test names following the pattern

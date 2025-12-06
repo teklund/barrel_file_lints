@@ -1,17 +1,17 @@
 ---
 agent: docs-agent
-description: 'Write or update documentation following Flutter project standards'
-name: 'docs'
-argument-hint: 'target=<what-to-document> type=<instruction|technical|readme|changelog>'
+description: "Write or update documentation for barrel_file_lints analyzer plugin"
+name: "docs"
+argument-hint: "target=<what-to-document> type=<readme|changelog|contributing>"
 ---
 
-You are writing documentation using the docs-agent expertise. Create clear, accurate documentation following this Flutter project's documentation standards.
+You are writing documentation using the docs-agent expertise. Create clear, accurate documentation following this Dart analyzer plugin project's standards.
 
 ## Context
 
 Workspace: ${workspaceFolder}
-Target: ${input:target:What to document? (feature, file, or topic)}
-Doc type: ${input:type:Documentation type (instruction/technical/readme/changelog/auto)}
+Target: ${input:target:What to document? (rule, fix, or topic)}
+Doc type: ${input:type:Documentation type (readme/changelog/contributing/auto)}
 Focus: ${input:focus:Any specific aspects to emphasize? (optional)}
 
 ## Documentation Strategy
@@ -22,47 +22,59 @@ Apply your documentation expertise from #file:../agents/docs.agent.md with these
 
 **Auto-detect documentation type if not specified:**
 
-- **Instruction files** (`.github/instructions/*.instructions.md`) for:
-  - Code patterns and conventions
-  - AI-assisted development guidelines
-  - Feature-specific best practices
-  - Testing, architecture, UI patterns
+- **README.md** for:
 
-- **Technical docs** (`docs/**/*.md`) for:
-  - Architecture explanations
-  - Setup and configuration guides
-  - Testing strategies
-  - Troubleshooting and fixes
+  - Project overview and installation
+  - Rules documentation with examples
+  - Quick fixes documentation
+  - Configuration guide
+  - Usage examples
 
-- **README files** for:
-  - Project overview and quick start
-  - Feature documentation index
-  - Command reference tables
+- **CHANGELOG.md** for:
 
-- **CHANGELOG** (`CHANGELOG.md`) for:
   - Version history using Conventional Commits
-  - Grouped by type (Features, Bug Fixes, etc.)
+  - Grouped by type (Features, Bug Fixes, Breaking Changes, Documentation)
+  - Semantic versioning
+  - **Only user-facing changes** (exclude internal tooling, CI/CD, development workflows)
+
+- **CONTRIBUTING.md** for:
+
+  - Development setup
+  - Testing guidelines (analyzer_testing patterns)
+  - Code style (Dart 3.10+ features)
+  - Pull request process
+
+- **example/example.md** for:
+
+  - Usage examples with code snippets
+  - Configuration examples
+
+- **Dartdoc comments** (`lib/**/*.dart`) for:
+  - Public API documentation using `///`
+  - Class, method, and field descriptions
+  - Code examples in doc comments
+  - Parameter and return value documentation
 
 ### Documentation Requirements
 
-1. **Code Examples**: Use real patterns from `lib/` - verify with semantic_search and read_file
+1. **Code Examples**: Use real patterns from `lib/src/rules/` and `lib/src/fixes/` - verify with search tool
 2. **Validation**: Run get_errors to check markdown linting before completion
-3. **Accuracy**: Verify code examples compile with flutter analyze
-4. **Links**: Check all cross-references with file_search (no broken links)
-5. **Structure**: Follow patterns from existing docs in same category
-6. **Examples**: Include ✅ Good and ❌ Bad patterns for instruction files
-7. **Updates**: Update "Last Updated" date and relevant index files
+3. **Accuracy**: Verify code examples compile with dart analyze
+4. **Links**: Check all cross-references exist (no broken links)
+5. **Structure**: Follow existing documentation patterns
+6. **Examples**: Include ✅ Valid and ❌ Invalid import patterns for rules
+7. **Updates**: Update "Last Updated" date to current date
 
 ### Validation Checklist
 
 Before completing:
 
 - [ ] No markdown lint warnings (get_errors)
-- [ ] Code examples verified from actual codebase
-- [ ] All links checked and valid
-- [ ] Index files updated (INSTRUCTIONS.md, AGENTS.md, docs/README.md)
-- [ ] "Last Updated" date current
-- [ ] Follows template for doc type
+- [ ] Code examples verified from actual codebase (lib/src/rules/, lib/src/fixes/)
+- [ ] All file references exist
+- [ ] Both naming conventions documented (feature_xxx/ and features/xxx/)
+- [ ] Quick fix behavior documented for each rule
+- [ ] CHANGELOG follows Conventional Commits format
 
 ## Output Format
 
@@ -79,20 +91,23 @@ Provide documentation with:
 ## Example Usage
 
 ```
-/docs target=feature_auth type=instruction
-/docs target=analytics patterns
-/docs target=testing-strategy type=technical
+/docs target=avoid_internal_feature_imports type=readme
+/docs target=lib/src/rules/avoid_internal_feature_imports.dart (add dartdoc)
 /docs target=CHANGELOG
-/docs target=docs/architecture/state-management.md
+/docs target=CONTRIBUTING
+/docs target=README
+/docs target=example/example.md
 ```
 
 ## Related Files
 
-- `.github/instructions/docs.instructions.md` - Technical documentation patterns
-- `.github/instructions/instructions.instructions.md` - Instruction file guidelines
-- `.github/instructions/readme.instructions.md` - README patterns
+- `.github/agents/docs.agent.md` - Documentation agent with detailed guidelines
 - `.github/instructions/commits.instructions.md` - CHANGELOG format (Conventional Commits)
+- `.github/copilot-instructions.md` - Project standards and patterns
+- `README.md` - Main project documentation
+- `CHANGELOG.md` - Version history
+- `CONTRIBUTING.md` - Development guidelines
 
 ---
 
-**Tip:** Use this prompt after implementing new features or making architectural changes to keep documentation synchronized with code.
+**Tip:** Use this prompt after implementing new rules or fixes to keep documentation synchronized with code.

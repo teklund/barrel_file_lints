@@ -377,7 +377,7 @@ agent: test-agent
 Or in body:
 
 ```markdown
-Apply expertise from #file:../agents/test-agent.md
+Apply expertise from #file:../agents/test.agent.md
 ```
 
 ### Tool Priority

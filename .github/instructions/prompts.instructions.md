@@ -15,7 +15,7 @@ Guidelines for creating reusable prompt files for GitHub Copilot Chat.
 
 - File location: `.github/prompts/*.prompt.md`
 - Use custom agents when appropriate (`code-review-agent`, `test-agent`, `docs-agent`)
-- Reference agents with `#file:../agents/agent-name.md`
+- Reference agents with #file:../agents/test.agent.md (example)
 - Use variables for user input: `${input:name:description}`
 - Document in `prompts.md` after creation
 
@@ -30,7 +30,7 @@ description: "Write tests following best practices"
 name: "write-tests"
 ---
 
-You are using the test-agent expertise from #file:../agents/test-agent.md
+You are using the test-agent expertise from #file:../agents/test.agent.md
 
 ## Context
 
@@ -135,12 +135,12 @@ ${input:variableName:Placeholder description} # With hint
 
 ### Tool References
 
-Reference tools in prompt body using:
+Reference tools in prompt body using the format:
 
-```markdown
-#tool:toolName # Reference a specific tool
-#tool:githubRepo # Example: GitHub repository tool
-```
+````markdown
+#tool:search to reference a specific tool
+#tool:githubRepo as an example for GitHub repository tool
+````
 
 **Note:** Tools must be listed in the `tools` frontmatter field to be available.
 
@@ -183,7 +183,7 @@ Focus: ${input:focus:Any specific concern? (optional)}
 agent: test-agent
 ---
 
-You are using test-agent expertise from #file:../agents/test-agent.md
+You are using test-agent expertise from #file:../agents/test.agent.md
 
 Apply your testing knowledge with these additional requirements:
 
@@ -207,7 +207,7 @@ agent: code-review-agent
 description: "Review code for quality"
 ---
 
-Apply your code review expertise from #file:../agents/code-review-agent.md
+Apply your code review expertise from #file:../agents/code-review.agent.md
 
 ## Context
 
@@ -232,7 +232,7 @@ agent: test-agent
 description: "Create tests following best practices"
 ---
 
-Apply your testing expertise from #file:../agents/test-agent.md
+Apply your testing expertise from #file:../agents/test.agent.md
 
 ## Context
 
@@ -258,7 +258,7 @@ agent: docs-agent
 description: "Create or update documentation"
 ---
 
-Apply your documentation expertise from #file:../agents/docs-agent.md
+Apply your documentation expertise from #file:../agents/docs.agent.md
 
 ## Context
 
@@ -278,7 +278,7 @@ Format: ${input:format:README/guide/API docs}
 
 - ✅ Use `.prompt.md` extension (required for VS Code)
 - ✅ Add YAML frontmatter with `description` (optional but recommended)
-- ✅ Reference custom agents with `#file:../agents/agent-name.md`
+- ✅ Reference custom agents with #file:../agents/test.agent.md (example)
 - ✅ Organize with clear `##` sections
 - ✅ Use Markdown formatting (lists, code blocks, emphasis)
 - ✅ Place variables inline where values belong
@@ -422,7 +422,7 @@ tools: ["git", "github"] # These override agent's default tools
 
 ### Agent expertise not applied
 
-- Verify agent reference: `#file:../agents/agent-name.md`
+- Verify agent reference uses #file:../agents/test.agent.md (example format)
 - Check agent file exists
 - Ensure frontmatter has correct `agent` field
 - Prompt should explicitly reference agent
@@ -437,7 +437,7 @@ agent: code-review-agent
 description: "Quick code review"
 ---
 
-Apply code-review-agent expertise from #file:../agents/code-review-agent.md
+Apply code-review-agent expertise from #file:../agents/code-review.agent.md
 
 Review: ${input:scope:What to review?}
 
@@ -454,7 +454,7 @@ name: "write-tests"
 argument-hint: "target=<file> type=<unit|widget|golden>"
 ---
 
-Apply test-agent expertise from #file:../agents/test-agent.md
+Apply test-agent expertise from #file:../agents/test.agent.md
 
 ## Context
 
