@@ -87,26 +87,48 @@ Overall status: ✅ Ready | ❌ Not Ready | ⚠️ Ready with Recommendations
 
 ### Strengths
 
-What's implemented well
+What's implemented well (be specific with examples)
 
 ### Blocking Issues (Must Fix)
 
-Critical issues with file paths and line numbers
+Critical issues with file paths and line numbers (or "None" if ready)
 
 ### Recommendations (Non-Blocking)
 
-Quality improvements to consider
+Quality improvements to consider (or "None" if excellent)
 
 ### Suggested PR Title
 
-Use Conventional Commits format: `type(scope): description`
+Follow Conventional Commits format per #file:../instructions/commits.instructions.md
+
+Format: `type(scope): description`
 
 Examples:
 
 - `feat(rules): add avoid_self_barrel_import rule`
 - `fix(fixes): handle edge case in replace_with_barrel_import`
 - `docs: update README with configuration examples`
-- `test: add coverage for relative imports`
+
+### Suggested PR Description
+
+Use Conventional Commits format (grouped by type). Include summary, changes, testing, and migration if applicable.
+
+Example:
+
+```markdown
+Adds split barrel support and 3 new rules. Removes `avoid_barrel_cycle` (performance: 150-1250ms overhead).
+
+**Changes:**
+
+- **feat(rules)**: add `avoid_relative_barrel_imports`, `avoid_ui_framework_in_logic`, `avoid_improper_layer_import`
+- **feat(fixes)**: add `ConvertToPackageImport`, `UseLayerSpecificBarrel`
+- **perf**: cached regex, early test file exits
+- **BREAKING**: removed `avoid_barrel_cycle` - use CLI `dart run barrel_file_lints:check_cycles`
+
+**Testing:** 205 tests passing. Added 3 test files (256, 446, 443 lines). Both naming conventions verified.
+
+**Docs:** README +267 lines, CHANGELOG updated.
+```
 
 ### Pre-Merge Checklist
 
