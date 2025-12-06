@@ -43,6 +43,7 @@ Apply your documentation expertise from #file:../agents/docs.agent.md with these
   - Testing guidelines (analyzer_testing patterns)
   - Code style (Dart 3.10+ features)
   - Pull request process
+  - **Keep concise** - point to existing code patterns, avoid verbosity
 
 - **example/example.md** for:
 

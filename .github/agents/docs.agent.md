@@ -87,6 +87,8 @@ Before completing documentation work:
 
 **Show, don't tell:** Use code examples with ✅ Valid and ❌ Invalid patterns
 
+**Point to code, not duplicating it:** For CONTRIBUTING.md, reference existing code patterns instead of explaining every detail. Keep it maintainable by avoiding verbosity.
+
 **Dart documentation style:** Follow [Effective Dart: Documentation](https://dart.dev/effective-dart/documentation)
 
 ### Code Examples

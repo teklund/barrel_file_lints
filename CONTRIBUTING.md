@@ -10,9 +10,7 @@ Thank you for your interest in contributing! This document provides guidelines f
 - [Commit Message Convention](#commit-message-convention)
 - [Making Changes](#making-changes)
 - [Project Structure](#project-structure)
-- [Writing Lint Rules](#writing-lint-rules)
-- [Writing Quick Fixes](#writing-quick-fixes)
-- [Testing Guidelines](#testing-guidelines)
+- [Writing Code](#writing-code)
 - [Submitting Changes](#submitting-changes)
 - [Reporting Issues](#reporting-issues)
 - [Getting Help](#getting-help)
@@ -198,84 +196,35 @@ barrel_file_lints/
 ├── bin/
 │   ├── check_cycles.dart            # CLI tool for cycle detection
 │   └── README.md
-├── test/
-│   ├── avoid_core_importing_features_test.dart
-│   ├── avoid_cross_feature_barrel_exports_test.dart
-│   ├── avoid_ui_framework_in_logic_test.dart
-│   ├── avoid_internal_feature_imports_test.dart
-│   ├── additional_internal_directories_test.dart
-│   ├── cli_check_cycles_test.dart
-│   ├── edge_cases_test.dart
-│   ├── quick_fix_application_test.dart
-│   ├── quick_fixes_test.dart
-│   ├── relative_imports_test.dart
-│   ├── relative_path_depth_test.dart
-│   ├── same_feature_barrel_import_test.dart
-│   ├── split_barrel_and_layer_test.dart
-│   └── test_file_variations_test.dart
-└── .github/
-    └── workflows/
-        ├── ci.yml
-        ├── publish.yml
-        ├── lint_pr.yml
-        └── commit_lint.yml
+└── test/                            # Test files
 ```
 
-## Writing Lint Rules
+## Writing Code
 
-When adding a new lint rule:
+### Lint Rules
 
-1. **Define the LintCode** with a static constant:
+See existing rules in `lib/src/rules/` for patterns. Each rule needs:
 
-   ```dart
-   class MyNewRule extends AnalysisRule {
-     static const LintCode code = LintCode(
-       'my_new_rule',
-       "Error message",
-       correctionMessage: 'How to fix it',
-     );
-   }
-   ```
+- Static `LintCode` constant
+- Visitor implementation
+- Tests in `test/`
+- Documentation in README.md
 
-2. **Implement the visitor**:
+### Quick Fixes
 
-   ```dart
-   @override
-   void registerNodeProcessors(
-     RuleVisitorRegistry registry,
-     RuleContext context,
-   ) {
-     registry.addImportDirective(this, _MyVisitor(this, context));
-   }
-   ```
+See existing fixes in `lib/src/fixes/`. Each fix needs:
 
-3. **Add tests** in `test/my_new_rule_test.dart`
+- `ResolvedCorrectionProducer` implementation
+- Unique `FixKind` identifier
+- Registration in plugin
+- Tests verifying the transformation
 
-4. **Update README.md** with documentation
+### Testing
 
-## Writing Quick Fixes
-
-Quick fixes should:
-
-1. Extend `ResolvedCorrectionProducer`
-2. Have a unique `FixKind` identifier
-3. Be registered with `registerFixForRule()`
-4. Include tests verifying the fix
-
-## Testing Guidelines
-
-- **Test both valid and invalid cases**
-- **Cover edge cases** (null values, empty strings, etc.)
-- **Test both naming conventions** (`feature_xxx/` and `features/xxx/`)
-- **Test exclusions** (test files, etc.)
-- **Use descriptive test names**: `test_descriptiveName` format
-
-## Documentation
-
-- Update README.md for user-facing changes
-- Update CHANGELOG.md following [Keep a Changelog](https://keepachangelog.com/)
-- Add inline documentation for complex code
-- Include code examples in documentation
+- Test both valid and invalid cases
+- Cover both naming conventions (`feature_xxx/` and `features/xxx/`)
+- Use descriptive test names
+- Follow patterns in existing test files
 
 ## Submitting Changes
 
