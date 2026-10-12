@@ -373,6 +373,7 @@ import '../../domain/use_cases/login.dart';
 - `package:flutter/services.dart`
 - `package:flutter/rendering.dart`
 - Any other `package:flutter/*` UI packages (except `foundation.dart` and `flutter_test` in test files)
+- `package:material_ui/*` and `package:cupertino_ui/*` (Material and Cupertino as standalone packages)
 
 **Rationale:** Following Clean Architecture principles, the domain layer represents pure business logic that should be framework-agnostic. This enables:
 

@@ -16,7 +16,8 @@ import 'package:barrel_file_lints/src/utils/feature_pattern_utils.dart';
 /// Allowed imports include Dart core libraries (`dart:*`), annotations
 /// (`package:meta/meta.dart`), internal feature imports, and external
 /// non-Flutter packages. Forbidden imports include `package:flutter/material.dart`,
-/// `package:flutter/widgets.dart`, and other Flutter framework packages.
+/// `package:flutter/widgets.dart`, other Flutter framework packages, and the
+/// standalone `package:material_ui` and `package:cupertino_ui` packages.
 class AvoidUiFrameworkInLogic extends AnalysisRule {
   /// Creates a rule instance with default configuration.
   AvoidUiFrameworkInLogic()
@@ -105,6 +106,12 @@ class _FlutterImportVisitor extends SimpleAstVisitor<void> {
     // But allow flutter_test in test files (checked separately)
     if (uri.startsWith('package:flutter/') &&
         !uri.startsWith('package:flutter_test/')) {
+      return true;
+    }
+
+    // Material and Cupertino as standalone packages
+    if (uri.startsWith('package:material_ui/') ||
+        uri.startsWith('package:cupertino_ui/')) {
       return true;
     }
 

@@ -155,6 +155,63 @@ class SecureStorageDataSource {}
   }
 
   // ==========================================================================
+  // Standalone design packages (material_ui / cupertino_ui)
+  // ==========================================================================
+
+  Future<void> test_domainLayer_importsMaterialUi_violation() async {
+    newFile('$testPackageRootPath/lib/feature_auth/auth.dart', '');
+
+    newFile(
+      '$testPackageRootPath/lib/feature_auth/domain/use_cases/login.dart',
+      '''
+// ignore: uri_does_not_exist
+import 'package:material_ui/material_ui.dart';
+
+class LoginUseCase {}
+''',
+    );
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/domain/use_cases/login.dart',
+      [lint(30, 46)],
+    );
+  }
+
+  Future<void> test_dataLayer_importsCupertinoUi_violation() async {
+    newFile('$testPackageRootPath/lib/feature_settings/settings.dart', '');
+
+    newFile(
+      '$testPackageRootPath/lib/feature_settings/data/models/settings.dart',
+      '''
+// ignore: uri_does_not_exist
+import 'package:cupertino_ui/cupertino_ui.dart';
+
+class SettingsModel {}
+''',
+    );
+
+    await assertDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_settings/data/models/settings.dart',
+      [lint(30, 48)],
+    );
+  }
+
+  Future<void> test_uiLayer_importsMaterialUi_allowed() async {
+    newFile('$testPackageRootPath/lib/feature_auth/auth.dart', '');
+
+    newFile('$testPackageRootPath/lib/feature_auth/ui/pages/login.dart', '''
+// ignore: unused_import, uri_does_not_exist
+import 'package:material_ui/material_ui.dart';
+
+class LoginPage {}
+''');
+
+    await assertNoDiagnosticsInFile(
+      '$testPackageRootPath/lib/feature_auth/ui/pages/login.dart',
+    );
+  }
+
+  // ==========================================================================
   // Clean architecture naming convention (features/xxx/)
   // ==========================================================================
 
