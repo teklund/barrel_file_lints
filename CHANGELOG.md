@@ -6,6 +6,10 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 ## [Unreleased]
 
+### Improvements
+
+- **fix(rules)**: `avoid_ui_framework_in_logic` now flags the standalone `material_ui` and `cupertino_ui` packages in domain/data layers
+
 ## [1.0.5] - 2025-12-05
 
 ### New Features
